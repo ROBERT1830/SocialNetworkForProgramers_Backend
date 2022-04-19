@@ -1,0 +1,1 @@
+rootProject.name = "robertconstantin.example.scoailnetwork"
