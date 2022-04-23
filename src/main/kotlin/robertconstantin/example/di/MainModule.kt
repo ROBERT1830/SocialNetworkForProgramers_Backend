@@ -3,6 +3,8 @@ package robertconstantin.example.di
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
+import robertconstantin.example.data.repository.follow.FollowRepository
+import robertconstantin.example.data.repository.follow.FollowRepositoryImpl
 import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.repository.user.UserRepositoryImpl
 import robertconstantin.example.util.Constants.DATABASE_NAME
@@ -26,5 +28,8 @@ val mainModule = module {
         //is watch what is needed for the controller and the get function get a koin
         //instance of that module to provide it.
         UserRepositoryImpl(get())
+    }
+    single<FollowRepository> {
+        FollowRepositoryImpl(get())
     }
 }

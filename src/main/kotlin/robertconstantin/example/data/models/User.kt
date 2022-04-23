@@ -15,7 +15,7 @@ data class User(
     val linkedInUlr: String?,
     //is default parameter and should not became before not default ones
     val skills: List<String> = listOf(),
-    //in mongo id is a string
+    //in mongo id is a string. By this annotation the mongo will create an id for you
     @BsonId
     val id: String = ObjectId().toString(),
 
