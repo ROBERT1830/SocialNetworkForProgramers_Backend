@@ -1,4 +1,4 @@
-package robertconstantin.example.controller.user
+package robertconstantin.example.repository.user
 
 import robertconstantin.example.data.models.User
 
@@ -10,7 +10,7 @@ import robertconstantin.example.data.models.User
  * our own definitions. For example we can just keep track of a hassmap or a list that just keeps track of all
  * our users just for the test case. And with tat we can see if everything is fines in other circumstances.
  */
-interface UserController {
+interface UserRepository {
     //for create an account
     suspend fun createUser(user: User)
     //for check for an account

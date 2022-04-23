@@ -1,4 +1,4 @@
-package robertconstantin.example.controller.user
+package robertconstantin.example.repository.user
 
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
@@ -9,9 +9,9 @@ import robertconstantin.example.data.models.User
  * so in its constructor needs that database.
  *
  */
-class UserControllerImpl(
+class UserRepositoryImpl(
     private val db: CoroutineDatabase
-): UserController {
+): UserRepository {
 
     //we need to have access to the collecitons that are gona be used in the db.
     //For creating a user we need the user Collection

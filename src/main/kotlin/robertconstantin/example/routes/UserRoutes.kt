@@ -5,17 +5,16 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.koin.ktor.ext.inject
-import robertconstantin.example.controller.user.UserController
+import robertconstantin.example.repository.user.UserRepository
 import robertconstantin.example.data.models.User
 import robertconstantin.example.data.requests.CreateAccountRequest
 import robertconstantin.example.data.responses.BasicApiResponse
 import robertconstantin.example.util.ApiResponseMessages.FIELDS_BLANK
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
 
-fun Route.userRoutes(){
+fun Route.createUserRoute(userRepository: UserRepository){
 
-    val userController: UserController by inject()
+
 
     //make the path clear.
     route("/api/user/create"){
@@ -40,8 +39,10 @@ fun Route.userRoutes(){
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-
-            //Check if the email already exists
+            /**ONCE WE GET THE DATA FROM CLIENT AUTOMATICALLY THE PLUGIN OF SERIALIZATION WILL
+             * DESERIALIZE THE JSON TO THE OBJECT WE WANT TO WORK WITH. NOW LET TAKE THE OBJECT
+             * AND BEFORE CREATING A USER PERFORM SOME CHECKS.**/
+            //Check if the email already exists in mongodb
             /**What will happen is that from the client side the server will receive a
              * JSON from a dataclass because the data to be sended need to be serialized
              * Then when the info get in the server it will be deserialized and here we are
@@ -55,7 +56,7 @@ fun Route.userRoutes(){
              *  by the type of document we wanto to chek and its specific value and equeal to
              *  certain parameter. This Finds the first document (user) that match the filter in the collection (list of users).
              *  check if it is not null in one line*/
-            val userExists = userController.getUserByEmail(request.email) != null
+            val userExists = userRepository.getUserByEmail(request.email) != null
             if (userExists){
                 //if the user exists then we will send a ApiResponse. So we need to create that api response
                 //Here if we pass a message as a data class, because we have the content negotiation feature with GSON
@@ -75,7 +76,6 @@ fun Route.userRoutes(){
                 call.respond(
                     message = BasicApiResponse(
                         message = FIELDS_BLANK,
-                        //because the user exists and the login for that user is not succesfull. Needs to choose an other email
                         successful = false
                     )
                 )
@@ -83,7 +83,7 @@ fun Route.userRoutes(){
             }
 
             //after passing he filters, then create a user
-            userController.createUser(
+            userRepository.createUser(
                 User(
                     email = request.email,
                     username = request.username,

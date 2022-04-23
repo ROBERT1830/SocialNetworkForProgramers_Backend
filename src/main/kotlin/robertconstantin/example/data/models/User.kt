@@ -10,10 +10,11 @@ data class User(
     val password: String,
     val profileImageUrl: String,
     val bio: String,
-    val skills: List<String> = listOf(),
     val githubUrl: String?,
     val instagramUrl: String?,
     val linkedInUlr: String?,
+    //is default parameter and should not became before not default ones
+    val skills: List<String> = listOf(),
     //in mongo id is a string
     @BsonId
     val id: String = ObjectId().toString(),

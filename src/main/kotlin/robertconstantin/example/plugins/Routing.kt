@@ -1,16 +1,15 @@
 package robertconstantin.example.plugins
 
 import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.http.content.*
 import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
-import robertconstantin.example.routes.userRoutes
+import org.koin.ktor.ext.inject
+import robertconstantin.example.repository.user.UserRepository
+import robertconstantin.example.routes.createUserRoute
 
 fun Application.configureRouting() {
+    val userRepository: UserRepository by inject()
     routing {
         //routes for access and make changes to the User documents
-        userRoutes()
+        createUserRoute(userRepository)
     }
 }
