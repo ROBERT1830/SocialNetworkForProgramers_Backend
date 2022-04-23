@@ -1,4 +1,4 @@
-package robertconstantin.example.repository.user
+package robertconstantin.example.data.repository.user
 
 import robertconstantin.example.data.models.User
 
@@ -17,5 +17,8 @@ interface UserRepository {
     suspend fun getUserById(id: String): User?
 
     suspend fun getUserByEmail(email: String): User?
+
+    //function that gets a user and checks if the paswword is what the user entered
+    suspend fun doesPasswordForUserMatch(email:String, enteredPassword: String): Boolean
 
 }

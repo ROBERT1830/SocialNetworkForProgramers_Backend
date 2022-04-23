@@ -1,4 +1,4 @@
-package robertconstantin.example.repository.user
+package robertconstantin.example.data.repository.user
 
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
@@ -35,4 +35,46 @@ class UserRepositoryImpl(
         //for the filter user the document we want to look in and more specifically the variable
         return users.findOne(User::email eq email)
     }
+
+    //get the user by emailand check if the pasword matches when the user login
+    override suspend fun doesPasswordForUserMatch(email: String, enteredPassword: String): Boolean {
+
+        val user = getUserByEmail(email) //get unique user for email
+        return user?.password == enteredPassword
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

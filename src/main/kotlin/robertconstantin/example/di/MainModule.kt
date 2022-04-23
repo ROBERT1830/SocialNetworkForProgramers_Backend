@@ -3,8 +3,8 @@ package robertconstantin.example.di
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
-import robertconstantin.example.repository.user.UserRepository
-import robertconstantin.example.repository.user.UserRepositoryImpl
+import robertconstantin.example.data.repository.user.UserRepository
+import robertconstantin.example.data.repository.user.UserRepositoryImpl
 import robertconstantin.example.util.Constants.DATABASE_NAME
 
 

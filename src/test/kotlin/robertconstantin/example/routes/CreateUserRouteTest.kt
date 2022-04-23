@@ -10,6 +10,7 @@ import io.ktor.server.testing.*
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
 import org.koin.test.KoinTest
 import org.koin.test.inject
 import robertconstantin.example.data.models.User
@@ -20,6 +21,7 @@ import robertconstantin.example.plugins.configureSerialization
 import robertconstantin.example.repository.user.FakeUserRepository
 import robertconstantin.example.util.ApiResponseMessages.FIELDS_BLANK
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 
 /**
@@ -43,6 +45,11 @@ internal class CreateUserRouteTest : KoinTest {
         startKoin {
             modules(testModule)
         }
+    }
+    //stop koin after runing test because if not will break
+    @AfterTest
+    fun tearDown(){
+        stopKoin()
     }
 
 

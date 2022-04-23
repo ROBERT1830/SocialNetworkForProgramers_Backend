@@ -1,6 +1,7 @@
 package robertconstantin.example.repository.user
 
 import robertconstantin.example.data.models.User
+import robertconstantin.example.data.repository.user.UserRepository
 
 /**
  * Here we have created a fake version of our UserRepositryimpl that behavies the same way but just for singl etest case
@@ -27,5 +28,11 @@ class FakeUserRepository: UserRepository {
 
     override suspend fun getUserByEmail(email: String): User? {
         return users.find { it.email == email }
+    }
+
+    override suspend fun doesPasswordForUserMatch(email: String, enteredPassword: String): Boolean {
+
+        val user = getUserByEmail(email)
+        return user?.password == enteredPassword
     }
 }

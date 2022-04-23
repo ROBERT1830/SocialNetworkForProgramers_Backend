@@ -5,11 +5,13 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import robertconstantin.example.repository.user.UserRepository
+import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.models.User
 import robertconstantin.example.data.requests.CreateAccountRequest
+import robertconstantin.example.data.requests.LoginRequest
 import robertconstantin.example.data.responses.BasicApiResponse
 import robertconstantin.example.util.ApiResponseMessages.FIELDS_BLANK
+import robertconstantin.example.util.ApiResponseMessages.INVALID_CREDENTIALS
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
 
 fun Route.createUserRoute(userRepository: UserRepository){
@@ -108,6 +110,81 @@ fun Route.createUserRoute(userRepository: UserRepository){
         }
     }
 }
+
+fun Route.loginUser(userRepository: UserRepository){
+
+
+    route("/api/user/login"){
+        post {
+            //when the request arrives the server will be seriealized and automatically the plugin will
+            //deserailize it to wor with that object.
+            val request = call.receiveOrNull<LoginRequest>() ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            if (request.email.isBlank() && request.password.isBlank()){
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            //2 ways for auth. We use sealed clases for that.
+            //The thing is that if the user logs iin with name we have to find the name of the user
+            //in the db.and if they used email we have to find the email in the db.
+//            val authMethod = if (request.email.isNotBlank()){
+//                AuthMethod.Email
+//            }else AuthMethod.Username
+            /**-->We decide to use only the email and not the name to register because
+             * if that occurs the name sould be unique and could be many name like our in the app.*/
+
+           val isCorrectPassword = userRepository.doesPasswordForUserMatch(
+                email = request.email,
+                enteredPassword = request.password
+           )
+            if (isCorrectPassword){
+                call.respond(
+                    status = HttpStatusCode.OK,
+                    message = BasicApiResponse(
+                        successful = true
+                    )
+                )
+            }else {
+                call.respond(
+                    status = HttpStatusCode.OK,
+                    message = BasicApiResponse(
+                        successful = false,
+                        message = INVALID_CREDENTIALS
+                    )
+                )
+            }
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
