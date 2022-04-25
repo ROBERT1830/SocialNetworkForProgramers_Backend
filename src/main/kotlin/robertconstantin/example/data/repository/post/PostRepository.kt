@@ -7,12 +7,14 @@ interface PostRepository {
     suspend fun createPostIfUserExists(post: Post): Boolean
     suspend fun deletePost(postId: String)
 
+    //function that retrieves th post by those people we follow
     suspend fun getPostsByFollows(
         userId: String,
         page: Int  = 0,
         pageSize: Int
     ): List<Post>
 
-    //function that retrieves th post by those people we follow
+    suspend fun getPost(postId: String): Post?
+
 
 }

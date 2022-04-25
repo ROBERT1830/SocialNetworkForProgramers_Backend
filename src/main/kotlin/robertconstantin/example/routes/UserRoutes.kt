@@ -7,9 +7,6 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.litote.kmongo.util.idValue
-import robertconstantin.example.data.repository.user.UserRepository
-import robertconstantin.example.data.models.User
 import robertconstantin.example.data.requests.CreateAccountRequest
 import robertconstantin.example.data.requests.LoginRequest
 import robertconstantin.example.data.responses.AuthResponse
@@ -20,7 +17,7 @@ import robertconstantin.example.util.ApiResponseMessages.INVALID_CREDENTIALS
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
 import java.util.*
 
-fun Route.createUserRoute(userService: UserService){
+fun Route.createUser(userService: UserService){
 
 
 

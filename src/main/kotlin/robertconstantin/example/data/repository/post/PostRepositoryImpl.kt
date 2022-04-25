@@ -73,6 +73,11 @@ class PostRepositoryImpl(
         return postsFromFollows
 
     }
+
+    override suspend fun getPost(postId: String): Post? {
+
+        return posts.findOneById(postId)
+    }
 }
 
 

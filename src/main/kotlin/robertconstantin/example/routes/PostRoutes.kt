@@ -10,9 +10,11 @@ import io.ktor.routing.*
 import robertconstantin.example.data.models.Post
 import robertconstantin.example.data.repository.post.PostRepository
 import robertconstantin.example.data.requests.CreatePostRequest
+import robertconstantin.example.data.requests.DeletePostRequest
 import robertconstantin.example.data.requests.FollowUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
 import robertconstantin.example.plugins.email
+import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.PostService
 import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
@@ -133,6 +135,51 @@ fun Route.getPostsForFollows(
     }
 }
 
+
+fun Route.deletePost(
+    postService: PostService,
+    userService: UserService,
+    likeService: LikeService
+){
+    //here we have a delete post reqeust. So we need a new request model which will be get from client side
+    route("/api/post/delete"){
+        delete {
+            val request = call.receiveOrNull<DeletePostRequest>() ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@delete
+            }
+
+            //Now we want to get the post and check if that actually belongs
+
+            val post = postService.getPost(request.postId)
+            if (post == null){
+                call.respond(
+                    message = HttpStatusCode.NotFound
+                )
+                return@delete
+            }
+            //if the post collection was found check if the
+
+            ifEmailBelongToUser(
+                //check if the post of the user belongs to him.
+                userId = post.userId,
+                validateEmail = userService::doesEmailBelongToUserId
+            ){
+                //Now in that lambda if it executes means that the user is him and is allowed to delete his own post
+                postService.deletePost(request.postId)
+                likeService.deleteLikesForParent(request.postId)
+                // TODO: 25/4/22 delete comments from post
+                call.respond(HttpStatusCode.OK)
+            }
+
+
+
+
+
+        }
+    }
+
+}
 
 
 

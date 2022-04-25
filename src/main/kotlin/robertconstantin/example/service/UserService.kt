@@ -16,6 +16,7 @@ class UserService(
         return repository.getUserByEmail(email) != null
     }
 
+    //userId comes from post that we obtained
     suspend fun doesEmailBelongToUserId(email: String, userId:String): Boolean{
         return repository.doesEmailBelongToUserId(email, userId)
     }

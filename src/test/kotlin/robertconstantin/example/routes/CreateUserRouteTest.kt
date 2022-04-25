@@ -70,7 +70,7 @@ internal class CreateUserRouteTest : KoinTest {
         //make sure thata the test case will have it.
         withTestApplication(moduleFunction = {
             install(Routing) {
-                createUserRoute(userRepository)
+                createUser(userRepository)
             }
         }) {
             //when performing a test for post, you will need to declare the method as post and the uri
@@ -116,7 +116,7 @@ internal class CreateUserRouteTest : KoinTest {
             install(Routing) {
                 //for parsing the object
                 configureSerialization()
-                createUserRoute(userRepository)
+                createUser(userRepository)
             }
         }) {
             val request = handleRequest(
@@ -161,7 +161,7 @@ internal class CreateUserRouteTest : KoinTest {
         withTestApplication(moduleFunction = {
             install(Routing) {
                 configureSerialization()
-                createUserRoute(userRepository)
+                createUser(userRepository)
             }
         }) {
             val request = handleRequest(
@@ -206,7 +206,7 @@ internal class CreateUserRouteTest : KoinTest {
         withTestApplication(moduleFunction = {
             install(Routing) {
                 configureSerialization()
-                createUserRoute(userRepository)
+                createUser(userRepository)
             }
         }) {
             val request = handleRequest(
