@@ -7,6 +7,8 @@ import robertconstantin.example.data.repository.follow.FollowRepository
 import robertconstantin.example.data.repository.follow.FollowRepositoryImpl
 import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.repository.user.UserRepositoryImpl
+import robertconstantin.example.service.FollowService
+import robertconstantin.example.service.UserService
 import robertconstantin.example.util.Constants.DATABASE_NAME
 
 
@@ -32,4 +34,11 @@ val mainModule = module {
     single<FollowRepository> {
         FollowRepositoryImpl(get())
     }
+
+    /********PROVIDE THE USER SERVICE********/
+
+    single {
+        UserService(get())
+    }
+    single { FollowService(get()) }
 }

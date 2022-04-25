@@ -5,16 +5,18 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import org.litote.kmongo.util.idValue
 import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.models.User
 import robertconstantin.example.data.requests.CreateAccountRequest
 import robertconstantin.example.data.requests.LoginRequest
 import robertconstantin.example.data.responses.BasicApiResponse
+import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages.FIELDS_BLANK
 import robertconstantin.example.util.ApiResponseMessages.INVALID_CREDENTIALS
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
 
-fun Route.createUserRoute(userRepository: UserRepository){
+fun Route.createUserRoute(userService: UserService){
 
 
 
@@ -58,8 +60,8 @@ fun Route.createUserRoute(userRepository: UserRepository){
              *  by the type of document we wanto to chek and its specific value and equeal to
              *  certain parameter. This Finds the first document (user) that match the filter in the collection (list of users).
              *  check if it is not null in one line*/
-            val userExists = userRepository.getUserByEmail(request.email) != null
-            if (userExists){
+
+            if (userService.doesUserWithEmailExist(request.email)){
                 //if the user exists then we will send a ApiResponse. So we need to create that api response
                 //Here if we pass a message as a data class, because we have the content negotiation feature with GSON
                 //it will automatically parse the data class to JSON when we say call.respond
@@ -74,39 +76,28 @@ fun Route.createUserRoute(userRepository: UserRepository){
             }
 
             //Cheack if the request is empty or not
-            if (request.email.isBlank() || request.password.isBlank() || request.username.isBlank()){
-                call.respond(
-                    message = BasicApiResponse(
-                        message = FIELDS_BLANK,
-                        successful = false
+            when(userService.validateCreateAccountRequest(request)){
+                is UserService.ValidationEvent.ErrorFieldEmpty -> {
+                    call.respond(
+                        message = BasicApiResponse(
+                            message = FIELDS_BLANK,
+                            successful = false
+                        )
                     )
-                )
-                return@post
+                }
+                is UserService.ValidationEvent.SuccessEvent -> {
+                    //now after applyy those filters for the data that comes into the server we can respond
+                    //witha a succesfull message
+                    userService.createUser(request)
+                    call.respond(
+                        message = BasicApiResponse(
+                            successful = true
+                            //here we dont have message because is succesfull
+                        )
+                    )
+
+                }
             }
-
-            //after passing he filters, then create a user
-            userRepository.createUser(
-                User(
-                    email = request.email,
-                    username = request.username,
-                    password = request.password,
-                    profileImageUrl = "",
-                    bio = "",
-                    githubUrl = null,
-                    instagramUrl = null,
-                    linkedInUlr = null
-                )
-            )
-
-            //now after applyy those filters for the data that comes into the server we can respond
-            //witha a succesfull message
-            call.respond(
-                message = BasicApiResponse(
-                    successful = true
-                //here we dont have message because is succesfull
-                )
-            )
-
         }
     }
 }

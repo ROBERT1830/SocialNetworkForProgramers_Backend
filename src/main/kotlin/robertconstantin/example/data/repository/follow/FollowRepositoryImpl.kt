@@ -56,7 +56,10 @@ class FollowRepositoryImpl(
         /*We unfollow a user if we find a collection Following
         * in which the following (el qeu yo sigo) and the followed (me because i follow him)
         * are equal to the id we pass. iN THAT CASE THE COLLECTION wil be removed.
-        * deleteOne return a DeleteResult*/
+        * deleteOne return a DeleteResult
+        *
+        * If yoyu delete a follow a Following document shoudl have been created, so no need to
+        * check it they exists*/
        val deleteResult = following.deleteOne(
            //delete if there is a collection in which the followinid and followeuserid matches
             and(

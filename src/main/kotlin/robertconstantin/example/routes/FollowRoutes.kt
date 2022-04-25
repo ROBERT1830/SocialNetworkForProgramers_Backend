@@ -8,12 +8,13 @@ import io.ktor.routing.*
 import robertconstantin.example.data.repository.follow.FollowRepository
 import robertconstantin.example.data.requests.FollowUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
+import robertconstantin.example.service.FollowService
 import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
 
 /**
  * That route will be used to follow a user
  */
-fun Route.followUser(followRepository: FollowRepository){
+fun Route.followUser(followService: FollowService){
 
     route("/api/following/follow"){
         post {
@@ -28,10 +29,7 @@ fun Route.followUser(followRepository: FollowRepository){
              * that we are currently looking at deletes the account and then we click on follow
              * then te user cand be found. And we sould reply with that. We should respond
              */
-            val didUserExist = followRepository.followUserIfExists(
-                request.followingUserId,
-                request.followedUserId
-            )
+            val didUserExist = followService.followUserIfExist(request)
             if (didUserExist){
                 call.respond(
                     status = HttpStatusCode.OK,
@@ -52,7 +50,7 @@ fun Route.followUser(followRepository: FollowRepository){
     }
 }
 
-fun Route.unfollowUser(followRepository: FollowRepository){
+fun Route.unfollowUser(followService: FollowService){
 
     route("/api/following/unfollow"){
         delete {
@@ -62,10 +60,7 @@ fun Route.unfollowUser(followRepository: FollowRepository){
                 return@delete
             }
 
-            val didUserExist = followRepository.unFollowUserIfExists(
-                request.followingUserId,
-                request.followedUserId
-            )
+            val didUserExist = followService.unFollowUserIfExist(request)
             if (didUserExist){
                 call.respond(
                     status = HttpStatusCode.OK,

@@ -10,9 +10,10 @@ import robertconstantin.example.data.repository.post.PostRepository
 import robertconstantin.example.data.requests.CreatePostRequest
 import robertconstantin.example.data.requests.FollowUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
+import robertconstantin.example.service.PostService
 import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
 
-fun Route.cratePostRoute(postRepository: PostRepository){
+fun Route.cratePostRoute(postService: PostService){
     route("/api/post/create"){
         post {
             val request = call.receiveOrNull<CreatePostRequest>() ?: kotlin.run {
@@ -20,14 +21,8 @@ fun Route.cratePostRoute(postRepository: PostRepository){
                 return@post
             }
 
-            val didUserExists = postRepository.createPostIfUserExists(
-                Post(
-                    imageUrl = "",
-                    userId = request.userId,
-                    timestamp = System.currentTimeMillis(),
-                    description = request.description
-                )
-            )
+            val didUserExists = postService.createPostIfUserExists(request)
+
             if (!didUserExists){
                 call.respond(
                     HttpStatusCode.OK,
