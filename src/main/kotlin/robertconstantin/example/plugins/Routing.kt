@@ -41,6 +41,7 @@ fun Application.configureRouting() {
         unfollowUser(followService)
         //Post routes
         cratePostRoute(postService, userService)
+        getPostsForFollows(postService, userService)
     }
 }
 

@@ -39,3 +39,10 @@ fun Application.configureSecurity() {
     }
 
 }
+
+
+//extension variable to get the email and not vrite the function over and over again with the claim.
+
+
+val JWTPrincipal.email: String?
+    get() = getClaim("email", String::class)
