@@ -4,10 +4,7 @@ import io.ktor.routing.*
 import io.ktor.application.*
 import org.koin.ktor.ext.inject
 import robertconstantin.example.routes.*
-import robertconstantin.example.service.FollowService
-import robertconstantin.example.service.LikeService
-import robertconstantin.example.service.PostService
-import robertconstantin.example.service.UserService
+import robertconstantin.example.service.*
 
 fun Application.configureRouting() {
 
@@ -17,6 +14,7 @@ fun Application.configureRouting() {
     val followService: FollowService by inject()
     val postService: PostService by inject()
     val likeService: LikeService by inject()
+    val commentService: CommentService by inject()
 
 
     //access the aplication.conf file to get the domain and all the stuf for jwt.
@@ -41,10 +39,14 @@ fun Application.configureRouting() {
         //Post routes
         cratePostRoute(postService, userService)
         getPostsForFollows(postService, userService)
-        deletePost(postService, userService)
+        deletePost(postService, userService, likeService)
         //Like routes
         likeParent(likeService, userService)
         unlikeParent(likeService, userService)
+        // Comment routes
+        createComments(commentService, userService)
+        deleteComment(commentService, userService, likeService)
+        getCommentsForPost(commentService)
     }
 }
 

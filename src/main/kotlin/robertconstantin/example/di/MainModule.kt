@@ -3,6 +3,8 @@ package robertconstantin.example.di
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
+import robertconstantin.example.data.repository.comment.CommentRepository
+import robertconstantin.example.data.repository.comment.CommentRepositoryImpl
 import robertconstantin.example.data.repository.follow.FollowRepository
 import robertconstantin.example.data.repository.follow.FollowRepositoryImpl
 import robertconstantin.example.data.repository.likes.LikesRepository
@@ -11,10 +13,7 @@ import robertconstantin.example.data.repository.post.PostRepository
 import robertconstantin.example.data.repository.post.PostRepositoryImpl
 import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.repository.user.UserRepositoryImpl
-import robertconstantin.example.service.FollowService
-import robertconstantin.example.service.LikeService
-import robertconstantin.example.service.PostService
-import robertconstantin.example.service.UserService
+import robertconstantin.example.service.*
 import robertconstantin.example.util.Constants.DATABASE_NAME
 
 
@@ -47,6 +46,8 @@ val mainModule = module {
 
     single<LikesRepository> { LikesRepositoryImpl(get()) }
 
+    single<CommentRepository> { CommentRepositoryImpl(get()) }
+
     /********PROVIDE THE USER SERVICE********/
 
     single {
@@ -57,4 +58,6 @@ val mainModule = module {
     single { PostService(get()) }
 
     single { LikeService(get()) }
+
+    single {CommentService(get())}
 }

@@ -104,7 +104,7 @@ fun Route.getPostsForFollows(
 ){
     authenticate {
         //Because is a get request we have query parameters and not json body like in post.
-        get {
+        get("api/post/get") {
             //userId could be null and if it is null, we respond with bad request
             val userId = call.parameters[PARAM_USER_ID] ?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
@@ -115,6 +115,7 @@ fun Route.getPostsForFollows(
 
             //validate that the user is actually who they tell they are.
             //extension function on PipelineContext
+            //only the person who actually follows people can their post.
             ifEmailBelongToUser(
                 userId = userId,
                 validateEmail = { //for shortcut --> validateEmial = userService::doesEmailBelongToUserId and automatically both parameters will be passed.
@@ -171,6 +172,7 @@ fun Route.deletePost(
                 // TODO: 25/4/22 delete comments from post
                 call.respond(HttpStatusCode.OK)
             }
+
 
 
 
