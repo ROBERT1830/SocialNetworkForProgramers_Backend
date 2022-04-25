@@ -1,5 +1,7 @@
 package robertconstantin.example.routes
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -10,11 +12,13 @@ import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.models.User
 import robertconstantin.example.data.requests.CreateAccountRequest
 import robertconstantin.example.data.requests.LoginRequest
+import robertconstantin.example.data.responses.AuthResponse
 import robertconstantin.example.data.responses.BasicApiResponse
 import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages.FIELDS_BLANK
 import robertconstantin.example.util.ApiResponseMessages.INVALID_CREDENTIALS
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
+import java.util.*
 
 fun Route.createUserRoute(userService: UserService){
 
@@ -102,7 +106,12 @@ fun Route.createUserRoute(userService: UserService){
     }
 }
 
-fun Route.loginUser(userRepository: UserRepository){
+fun Route.loginUser(
+    userService: UserService,
+    jwtIssuer: String,
+    jwtAudience: String,
+    jwtSecret: String
+){
 
 
     route("/api/user/login"){
@@ -126,15 +135,32 @@ fun Route.loginUser(userRepository: UserRepository){
             /**-->We decide to use only the email and not the name to register because
              * if that occurs the name sould be unique and could be many name like our in the app.*/
 
-           val isCorrectPassword = userRepository.doesPasswordForUserMatch(
-                email = request.email,
-                enteredPassword = request.password
-           )
+           val isCorrectPassword = userService.doesPasswordMatchForUser(request)
             if (isCorrectPassword){
+                //that is milliseconds, min, hour, days, number of days.
+                val expiresIn = 1000L * 60L * 60L * 24L * 365L
+
+                //if passsword is correct then create a token that will be responded by server and get
+                //by the app. The app will use that token to perfom the request after the user loggs in.
+                /*Attatch some data to the token withClain. We want to attatch the email (i sunique) of the user
+                * who currentlu loggs from the request.
+                * You create a token with the following data, the email because is unique,
+                * the issuer which is the domain from where is created, exipre data and audience
+                *
+                * So now in each and every reqeust from cleint that token will be attatched.
+                * This token will be checked before perform path stuff like create a post.  */
+                val token = JWT.create()
+                    .withClaim("email", request.email)
+                    .withIssuer(jwtIssuer)
+                        //define expire date for token
+                    .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))
+                    .withAudience(jwtAudience)
+                    .sign(Algorithm.HMAC256(jwtSecret))
+
                 call.respond(
                     status = HttpStatusCode.OK,
-                    message = BasicApiResponse(
-                        successful = true
+                    message = AuthResponse(
+                        token = token
                     )
                 )
             }else {

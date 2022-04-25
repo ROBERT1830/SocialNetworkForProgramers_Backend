@@ -42,6 +42,24 @@ class UserRepositoryImpl(
         val user = getUserByEmail(email) //get unique user for email
         return user?.password == enteredPassword
     }
+
+    /*email of the user that is performing the server request
+    * userId: id of the user hat is performing the server request.
+    *
+    * We need to check if the email of the user that makes the request is actually using
+    * its own email and not other.
+    * By doing so get the collection form the db that matches the user id and then compare
+    * the email from that colelction to the email passed in.
+    * In that way we prevent someone trying to make apost for example by using an email of an ohter
+    * user.
+    * */
+    override suspend fun doesEmailBelongToUserId(email: String, userId: String): Boolean {
+        /*Find the user with the id we pass, and we want to make sure that the email is equeal to
+        * the email we pass as a parameter
+        *
+        * So we check that the user with that id has the same email as the user who made the request*/
+        return users.findOneById(userId)?.email == email
+    }
 }
 
 

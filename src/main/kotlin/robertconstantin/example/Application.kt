@@ -17,11 +17,12 @@ fun Application.module() {
         modules(mainModule)
 
     }
+    configureSecurity()
     configureHTTP()
     configureRouting()
     //configureSockets()
     configureSerialization()
     configureMonitoring()
-    configureSecurity()
+
 
 }

@@ -11,22 +11,31 @@ import io.ktor.response.*
 import io.ktor.request.*
 
 fun Application.configureSecurity() {
-    
+
     authentication {
-            jwt {
-                val jwtAudience = environment.config.property("jwt.audience").getString()
-                realm = environment.config.property("jwt.realm").getString()
-                verifier(
-                    JWT
-                        .require(Algorithm.HMAC256("secret"))
-                        .withAudience(jwtAudience)
-                        .withIssuer(environment.config.property("jwt.domain").getString())
-                        .build()
-                )
-                validate { credential ->
-                    if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
-                }
+        jwt {
+
+            val jwtAudience = environment.config.property("jwt.audience").getString()
+            realm = environment.config.property("jwt.realm").getString()
+            verifier(
+                JWT
+                    .require(Algorithm.HMAC256("secret"))
+                    .withAudience(jwtAudience)
+                    .withIssuer(environment.config.property("jwt.domain").getString())
+                    .build()
+            )
+            // credential -> contains JWTCredential. So that will then contain the data of taht token. For example the payload
+            //we can attatch any kind of data to that. For example what we want to attatch is the email or user id
+            //bevause we want to validade server side if the email of the token is actually the email of the person who
+            //made the request
+            validate { credential ->
+                //if we are allowed to access the route of auth. Then return a principle. Principle in
+                //ktor is an object of an authenticated user.
+                if (credential.payload.audience.contains(jwtAudience)) {
+                    JWTPrincipal(credential.payload)
+                } else null
             }
         }
+    }
 
 }

@@ -34,3 +34,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### ignore the app configuration when upload to git to hide the secret and stuf ###
+/src/main/resources/application.conf

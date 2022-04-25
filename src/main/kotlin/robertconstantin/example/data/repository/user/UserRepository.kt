@@ -21,4 +21,7 @@ interface UserRepository {
     //function that gets a user and checks if the paswword is what the user entered
     suspend fun doesPasswordForUserMatch(email:String, enteredPassword: String): Boolean
 
+    //to verify that the email from whom is gona create a post belong to user id.
+    suspend fun doesEmailBelongToUserId(email: String, userId: String): Boolean
+
 }
