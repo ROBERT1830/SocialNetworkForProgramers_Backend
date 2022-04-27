@@ -23,32 +23,36 @@ fun Route.likeParent(
                     call.respond(HttpStatusCode.BadRequest)
                     return@post
                 }
-                //check if the user is really him who will add like. Allways check if the user who makes something is him.
-                ifEmailBelongToUser(
-                    userId = request.userId,
-                    validateEmail = userService::doesEmailBelongToUserId
-                ){
 
-                    //create like if the email belong to user that perfom like
-                   val likeSuccessful =  likeService.likeParent(request.userId, request.parentId)
-                    if (likeSuccessful){
-                        call.respond(
-                           status =  HttpStatusCode.OK,
-                            message = BasicApiResponse(
-                                successful = true
-                            )
+                //create like if the email belong to user that perfom like
+                //HERE PARENT ID COULD BE A COMMENT OR A POST (because we can perform likes on both)
+                val likeSuccessful =  likeService.likeParent(call.userId, request.parentId)
+                if (likeSuccessful){
+                    call.respond(
+                        status =  HttpStatusCode.OK,
+                        message = BasicApiResponse(
+                            successful = true
                         )
-                    }else{
-                        call.respond(
-                            status = HttpStatusCode.OK,
-                            message = BasicApiResponse(
-                                successful = false,
-                                message = ApiResponseMessages.USER_NOT_FOUND
-                            )
+                    )
+                }else{
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = BasicApiResponse(
+                            successful = false,
+                            message = ApiResponseMessages.USER_NOT_FOUND
+                        )
 
-                        )
-                    }
+                    )
                 }
+
+//                //check if the user is really him who will add like. Allways check if the user who makes something is him.
+//                ifEmailBelongToUser(
+//                    userId = request.userId,
+//                    validateEmail = userService::doesEmailBelongToUserId
+//                ){
+//
+//
+//                }
 
             }
         }
@@ -69,32 +73,35 @@ fun Route.unlikeParent(
                     call.respond(HttpStatusCode.BadRequest)
                     return@delete
                 }
-                //check if the user is really him who will add like. Allways check if the user who makes something is him.
+
+                //create like if the email belong to user that perfom like
+                val unlikeSuccessful =  likeService.unlikeParent(call.userId, request.parentId)
+                if (unlikeSuccessful){
+                    call.respond(
+                        status =  HttpStatusCode.OK,
+                        message = BasicApiResponse(
+                            successful = true
+                        )
+                    )
+                }else{
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = BasicApiResponse(
+                            successful = false,
+                            message = ApiResponseMessages.USER_NOT_FOUND
+                        )
+
+                    )
+                }
+
+                /*//check if the user is really him who will add like. Allways check if the user who makes something is him.
                 ifEmailBelongToUser(
                     userId = request.userId,
                     validateEmail = userService::doesEmailBelongToUserId
                 ){
 
-                    //create like if the email belong to user that perfom like
-                    val unlikeSuccessful =  likeService.unlikeParent(request.userId, request.parentId)
-                    if (unlikeSuccessful){
-                        call.respond(
-                            status =  HttpStatusCode.OK,
-                            message = BasicApiResponse(
-                                successful = true
-                            )
-                        )
-                    }else{
-                        call.respond(
-                            status = HttpStatusCode.OK,
-                            message = BasicApiResponse(
-                                successful = false,
-                                message = ApiResponseMessages.USER_NOT_FOUND
-                            )
 
-                        )
-                    }
-                }
+                }*/
 
             }
         }

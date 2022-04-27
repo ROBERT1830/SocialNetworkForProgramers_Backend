@@ -35,6 +35,8 @@ class PostRepositoryImpl(
     *
     * Get from all following documents that matched our id (current user id, following). Then
     * map to get the list of followedUserId. With that ids now we will get all the post for each and every id
+    *
+    * Take the posts that have id of people we follow. Must have the id of the people you follow.
     * */
     override suspend fun getPostsByFollows(
         userId: String,

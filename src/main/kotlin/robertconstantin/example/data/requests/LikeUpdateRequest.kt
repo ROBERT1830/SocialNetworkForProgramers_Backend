@@ -6,7 +6,7 @@ package robertconstantin.example.data.requests
  */
 data class LikeUpdateRequest(
     //the user that likes the post
-    val userId: String,
+    //val userId: String,
     //liked post
     val parentId: String
 )

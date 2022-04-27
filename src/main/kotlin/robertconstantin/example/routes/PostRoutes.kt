@@ -13,7 +13,6 @@ import robertconstantin.example.data.requests.CreatePostRequest
 import robertconstantin.example.data.requests.DeletePostRequest
 import robertconstantin.example.data.requests.FollowUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
-import robertconstantin.example.plugins.email
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.PostService
 import robertconstantin.example.service.UserService
@@ -21,11 +20,10 @@ import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
 import robertconstantin.example.util.Constants.DEFAULT_POST_PAGE_SIZE
 import robertconstantin.example.util.QueryParams.PARAM_PAGE
 import robertconstantin.example.util.QueryParams.PARAM_PAGE_SIZE
-import robertconstantin.example.util.QueryParams.PARAM_USER_ID
+
 
 fun Route.cratePostRoute(
-    postService: PostService,
-    userService: UserService
+    postService: PostService
 ){
 
     /*We have to authenticate first before doing the create post task. */
@@ -63,30 +61,42 @@ fun Route.cratePostRoute(
 //                }
 
                 //Above code could be writen like this using our own extension funciton.
-                ifEmailBelongToUser(
-                    userId = request.userId,
-                    validateEmail = userService::doesEmailBelongToUserId
-                ){
-                    val didUserExists = postService.createPostIfUserExists(request)
 
-                    if (!didUserExists){
-                        call.respond(
-                            HttpStatusCode.OK,
-                            BasicApiResponse(
-                                successful = false,
-                                message = USER_NOT_FOUND
+                /**
+                 * If a user makes an authenticated request, then we can directly determine
+                 * who make that request by using the userId.
+                 * So the app doesnt pass that userId explicitely anymore. Instead we just determine it from the
+                 * token.
+                 */
+                val userId = call.userId //userId contained in the token
+
+                val didUserExist = postService.createPostIfUserExists(request, userId)
+                val didUserExists = postService.createPostIfUserExists(request, userId)
+
+                if (!didUserExists){
+                    call.respond(
+                        HttpStatusCode.OK,
+                        BasicApiResponse(
+                            successful = false,
+                            message = USER_NOT_FOUND
+                        )
+                    )
+                } else{
+                    call.respond(
+                        HttpStatusCode.OK,
+                        BasicApiResponse(
+                            successful = true,
+
                             )
-                        )
-                    } else{
-                        call.respond(
-                            HttpStatusCode.OK,
-                            BasicApiResponse(
-                                successful = true,
-
-                                )
-                        )
-                    }
+                    )
                 }
+
+//                ifEmailBelongToUser(
+//                    userId = request.userId,
+//                    validateEmail = userService::doesEmailBelongToUserId
+//                ){
+//
+//                }
 
 
 
@@ -99,38 +109,40 @@ fun Route.cratePostRoute(
 }
 
 fun Route.getPostsForFollows(
-    postService: PostService,
-    userService: UserService
+    postService: PostService
 ){
     authenticate {
         //Because is a get request we have query parameters and not json body like in post.
         get("api/post/get") {
             //userId could be null and if it is null, we respond with bad request
-            val userId = call.parameters[PARAM_USER_ID] ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
+//            val userId = call.parameters[PARAM_USER_ID] ?: kotlin.run {
+//                call.respond(HttpStatusCode.BadRequest)
+//                return@get
+//            }
             val page = call.parameters[PARAM_PAGE]?.toIntOrNull() ?: 0 //if null get first page. convert to int the parameter from the query
             val pageSize = call.parameters[PARAM_PAGE_SIZE]?.toIntOrNull()?:DEFAULT_POST_PAGE_SIZE
+
+            //call.userId --> get it from token
+            val posts = postService.getPostForFollows(call.userId, page, pageSize)
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = posts
+            )
 
             //validate that the user is actually who they tell they are.
             //extension function on PipelineContext
             //only the person who actually follows people can their post.
-            ifEmailBelongToUser(
-                userId = userId,
-                validateEmail = { //for shortcut --> validateEmial = userService::doesEmailBelongToUserId and automatically both parameters will be passed.
-                    email: String, userId: String ->
-                    userService.doesEmailBelongToUserId(email = email, userId = userId)
-                }
-            ){
-                //if the email belongs to user we want to retrieve te posts
-                val posts = postService.getPostForFollows(userId, page, pageSize)
-                call.respond(
-                    status = HttpStatusCode.OK,
-                    message = posts
-                )
-
-            }
+//            ifEmailBelongToUser(
+//                userId = userId,
+//                validateEmail = { //for shortcut --> validateEmial = userService::doesEmailBelongToUserId and automatically both parameters will be passed.
+//                    email: String, userId: String ->
+//                    userService.doesEmailBelongToUserId(email = email, userId = userId)
+//                }
+//            ){
+//                //if the email belongs to user we want to retrieve te posts
+//
+//
+//            }
 
         }
     }
@@ -139,47 +151,54 @@ fun Route.getPostsForFollows(
 
 fun Route.deletePost(
     postService: PostService,
-    userService: UserService,
     likeService: LikeService
 ){
-    //here we have a delete post reqeust. So we need a new request model which will be get from client side
-    route("/api/post/delete"){
-        delete {
-            val request = call.receiveOrNull<DeletePostRequest>() ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@delete
+    authenticate {
+        //here we have a delete post reqeust. So we need a new request model which will be get from client side
+        route("/api/post/delete"){
+            delete {
+                val request = call.receiveOrNull<DeletePostRequest>() ?: kotlin.run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@delete
+                }
+
+                //Now we want to get the post and check if that actually belongs
+
+                val post = postService.getPost(request.postId)
+
+                if (post == null){
+                    call.respond(
+                        message = HttpStatusCode.NotFound
+                    )
+                    return@delete
+                }
+                //the post contains the userId who made the post. So if the userId that made the post, is equal to
+                //the token id then allow to delete.
+                if (post.userId == call.userId){
+                    postService.deletePost(request.postId)
+                    likeService.deleteLikesForParent(request.postId)
+                    // TODO: 25/4/22 delete comments from post
+                    call.respond(HttpStatusCode.OK)
+                }else{
+                    call.respond( HttpStatusCode.Unauthorized)
+                }
+
+
+
+                //if the post collection was found check if the
+
+//            ifEmailBelongToUser(
+//                //check if the post of the user belongs to him.
+//                userId = post.userId,
+//                validateEmail = userService::doesEmailBelongToUserId
+//            ){
+//                //Now in that lambda if it executes means that the user is him and is allowed to delete his own post
+//
+//            }
             }
-
-            //Now we want to get the post and check if that actually belongs
-
-            val post = postService.getPost(request.postId)
-            if (post == null){
-                call.respond(
-                    message = HttpStatusCode.NotFound
-                )
-                return@delete
-            }
-            //if the post collection was found check if the
-
-            ifEmailBelongToUser(
-                //check if the post of the user belongs to him.
-                userId = post.userId,
-                validateEmail = userService::doesEmailBelongToUserId
-            ){
-                //Now in that lambda if it executes means that the user is him and is allowed to delete his own post
-                postService.deletePost(request.postId)
-                likeService.deleteLikesForParent(request.postId)
-                // TODO: 25/4/22 delete comments from post
-                call.respond(HttpStatusCode.OK)
-            }
-
-
-
-
-
-
         }
     }
+
 
 }
 

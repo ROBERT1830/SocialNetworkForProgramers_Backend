@@ -132,7 +132,23 @@ fun Route.loginUser(
             /**-->We decide to use only the email and not the name to register because
              * if that occurs the name sould be unique and could be many name like our in the app.*/
 
-           val isCorrectPassword = userService.doesPasswordMatchForUser(request)
+            //get reference of the user that is login in
+            //if there is no user to retrive with that email, just respond with invalid.
+            val user = userService.getUserByEmail(request.email) ?: kotlin.run {
+                call.respond(
+                    status = HttpStatusCode.OK,
+                    message = BasicApiResponse(
+                        successful = false,
+                        message = INVALID_CREDENTIALS
+                    )
+                )
+                return@post
+            }
+           val isCorrectPassword = userService.isValidPassword(
+               enteredPassword = request.password,
+               //is whatever is saved in the db for that user
+               actualPassword = user.password
+           )
             if (isCorrectPassword){
                 //that is milliseconds, min, hour, days, number of days.
                 val expiresIn = 1000L * 60L * 60L * 24L * 365L
@@ -141,13 +157,14 @@ fun Route.loginUser(
                 //by the app. The app will use that token to perfom the request after the user loggs in.
                 /*Attatch some data to the token withClain. We want to attatch the email (i sunique) of the user
                 * who currentlu loggs from the request.
-                * You create a token with the following data, the email because is unique,
+                * You create a token with the following data, the email because is unique (so that we will know
+                * if the user is him when performin something like create a post or delete it),
                 * the issuer which is the domain from where is created, exipre data and audience
                 *
                 * So now in each and every reqeust from cleint that token will be attatched.
                 * This token will be checked before perform path stuff like create a post.  */
                 val token = JWT.create()
-                    .withClaim("email", request.email)
+                    .withClaim("userId", user.id)
                     .withIssuer(jwtIssuer)
                         //define expire date for token
                     .withExpiresAt(Date(System.currentTimeMillis() + expiresIn))

@@ -17,8 +17,7 @@ import robertconstantin.example.util.ApiResponseMessages
 import robertconstantin.example.util.QueryParams
 
 fun Route.createComments(
-    commentService: CommentService,
-    userService: UserService
+    commentService: CommentService
 ){
     authenticate {
         route("api/comment/create"){
@@ -27,41 +26,43 @@ fun Route.createComments(
                     call.respond(HttpStatusCode.BadRequest)
                     return@post
                 }
-                ifEmailBelongToUser(
-                    userId = request.userId,
-                    validateEmail = userService::doesEmailBelongToUserId
-                ){
-                    when(commentService.createComment(request)){
-                        is CommentService.ValidationEvent.ErrorFieldEmpty -> {
-                            call.respond(
-                                HttpStatusCode.OK,
-                                BasicApiResponse(
-                                    successful = false,
-                                    message = ApiResponseMessages.FIELDS_BLANK
-                                )
-                            )
-                        }
-                        is CommentService.ValidationEvent.ErrorCommentTooLong -> {
-                            call.respond(
-                                HttpStatusCode.OK,
-                                BasicApiResponse(
-                                    successful = false,
-                                    message = ApiResponseMessages.COMMENT_TOO_LONG
-                                )
-                            )
 
-                        }
-                        is CommentService.ValidationEvent.Success -> {
-                            call.respond(
-                                HttpStatusCode.OK,
-                                BasicApiResponse(
-                                    successful = true,
-                                )
+                when(commentService.createComment(request, call.userId)){
+                    is CommentService.ValidationEvent.ErrorFieldEmpty -> {
+                        call.respond(
+                            HttpStatusCode.OK,
+                            BasicApiResponse(
+                                successful = false,
+                                message = ApiResponseMessages.FIELDS_BLANK
                             )
+                        )
+                    }
+                    is CommentService.ValidationEvent.ErrorCommentTooLong -> {
+                        call.respond(
+                            HttpStatusCode.OK,
+                            BasicApiResponse(
+                                successful = false,
+                                message = ApiResponseMessages.COMMENT_TOO_LONG
+                            )
+                        )
 
-                        }
+                    }
+                    is CommentService.ValidationEvent.Success -> {
+                        call.respond(
+                            HttpStatusCode.OK,
+                            BasicApiResponse(
+                                successful = true,
+                            )
+                        )
+
                     }
                 }
+//                ifEmailBelongToUser(
+//                    userId = request.userId,
+//                    validateEmail = userService::doesEmailBelongToUserId
+//                ){
+//
+//                }
             }
         }
     }
@@ -86,7 +87,6 @@ fun Route.getCommentsForPost(
 
 fun Route.deleteComment(
     commentService: CommentService,
-    userService: UserService,
     likeService: LikeService
 ){
     authenticate {
@@ -96,27 +96,39 @@ fun Route.deleteComment(
                 return@delete
             }
 
-            ifEmailBelongToUser(
-                userId = request.userId,
-                validateEmail = userService::doesEmailBelongToUserId
+            /**
+             * When delete a comment we want to make sure that the user actually owwns the comment
+             * for that check the comment user id with the user id from the token. So first get the
+             * comment that has userId equals to token id which is current user that performs the call so terver
+             */
 
-            ){
-                //delete comment
-                val deleted = commentService.deleteComment(request.commentId)
-                if (deleted) {
-                    // ????????? why when delete a comment deletes a like.
-                    likeService.deleteLikesForParent(request.commentId)
-                    call.respond(
-                        status = HttpStatusCode.OK,
-                        message = BasicApiResponse(successful = true)
-                    )
-                }else{
-                    call.respond(
-                        status = HttpStatusCode.NotFound,
-                        message = BasicApiResponse(successful = false)
-                    )
-                }
+            val comment = commentService.getCommentById(request.commentId)
+            if (comment?.userId != call.userId){
+                call.respond(HttpStatusCode.Unauthorized)
+                return@delete
             }
+
+            //delete comment
+            val deleted = commentService.deleteComment(request.commentId)
+            if (deleted) {
+                //delete likes for a specific comment. parent here is the comment
+                likeService.deleteLikesForParent(request.commentId)
+                call.respond(
+                    status = HttpStatusCode.OK,
+                    message = BasicApiResponse(successful = true)
+                )
+            }else{
+                call.respond(
+                    status = HttpStatusCode.NotFound,
+                    message = BasicApiResponse(successful = false)
+                )
+            }
+//            ifEmailBelongToUser(
+//                userId = request.userId,
+//                validateEmail = userService::doesEmailBelongToUserId
+//            ){
+//
+//            }
         }
     }
 

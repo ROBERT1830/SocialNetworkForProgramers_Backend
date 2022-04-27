@@ -1,6 +1,7 @@
 package robertconstantin.example.routes
 
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
@@ -16,38 +17,41 @@ import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
  */
 fun Route.followUser(followService: FollowService){
 
-    route("/api/following/follow"){
-        post {
-            val request = call.receiveOrNull<FollowUpdateRequest>() ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@post
-            }
+    authenticate {
+        route("/api/following/follow"){
+            post {
+                val request = call.receiveOrNull<FollowUpdateRequest>() ?: kotlin.run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
+                }
 
 
-            /**
-             * Lets say we wanto to navigate to a user profile and at that time the user
-             * that we are currently looking at deletes the account and then we click on follow
-             * then te user cand be found. And we sould reply with that. We should respond
-             */
-            val didUserExist = followService.followUserIfExist(request)
-            if (didUserExist){
-                call.respond(
-                    status = HttpStatusCode.OK,
-                    message = BasicApiResponse(
-                        successful = true
+                /**
+                 * Lets say we wanto to navigate to a user profile and at that time the user
+                 * that we are currently looking at deletes the account and then we click on follow
+                 * then te user cand be found. And we sould reply with that. We should respond
+                 */
+                val didUserExist = followService.followUserIfExist(request, call.userId)
+                if (didUserExist){
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = BasicApiResponse(
+                            successful = true
+                        )
                     )
-                )
-            }else {
-                call.respond(
-                    status = HttpStatusCode.OK,
-                    message = BasicApiResponse(
-                        successful = false,
-                        message = USER_NOT_FOUND
+                }else {
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = BasicApiResponse(
+                            successful = false,
+                            message = USER_NOT_FOUND
+                        )
                     )
-                )
+                }
             }
         }
     }
+
 }
 
 fun Route.unfollowUser(followService: FollowService){
@@ -60,7 +64,7 @@ fun Route.unfollowUser(followService: FollowService){
                 return@delete
             }
 
-            val didUserExist = followService.unFollowUserIfExist(request)
+            val didUserExist = followService.unFollowUserIfExist(request, call.userId)
             if (didUserExist){
                 call.respond(
                     status = HttpStatusCode.OK,
