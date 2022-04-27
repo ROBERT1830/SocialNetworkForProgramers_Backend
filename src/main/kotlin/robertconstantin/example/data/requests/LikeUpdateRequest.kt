@@ -8,5 +8,6 @@ data class LikeUpdateRequest(
     //the user that likes the post
     //val userId: String,
     //liked post
-    val parentId: String
+    val parentId: String,
+    val parentType: Int
 )

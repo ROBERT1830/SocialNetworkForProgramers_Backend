@@ -15,6 +15,7 @@ fun Application.configureRouting() {
     val postService: PostService by inject()
     val likeService: LikeService by inject()
     val commentService: CommentService by inject()
+    val activityService: ActivityService by inject()
 
 
     //access the aplication.conf file to get the domain and all the stuf for jwt.
@@ -34,19 +35,21 @@ fun Application.configureRouting() {
         )
 
         // Following routes
-        followUser(followService)
+        followUser(followService, activityService)
         unfollowUser(followService)
         //Post routes
         cratePostRoute(postService)
         getPostsForFollows(postService)
-        deletePost(postService, likeService)
+        deletePost(postService, likeService, commentService)
         //Like routes
-        likeParent(likeService, userService)
+        likeParent(likeService, activityService)
         unlikeParent(likeService, userService)
         // Comment routes
-        createComments(commentService)
+        createComments(commentService, activityService)
         deleteComment(commentService, likeService)
         getCommentsForPost(commentService)
+        //Activity Routes
+        getActivities(activityService)
     }
 }
 

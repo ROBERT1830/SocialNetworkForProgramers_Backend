@@ -6,15 +6,17 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import robertconstantin.example.data.models.util.ParentType
 import robertconstantin.example.data.requests.LikeUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
+import robertconstantin.example.service.ActivityService
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages
 
 fun Route.likeParent(
     likeService: LikeService,
-    userService: UserService
+    activityService: ActivityService
 ){
     authenticate {
         route("/api/like"){
@@ -24,10 +26,18 @@ fun Route.likeParent(
                     return@post
                 }
 
+                val userId = call.userId
+
                 //create like if the email belong to user that perfom like
                 //HERE PARENT ID COULD BE A COMMENT OR A POST (because we can perform likes on both)
-                val likeSuccessful =  likeService.likeParent(call.userId, request.parentId)
+                val likeSuccessful =  likeService.likeParent(userId, request.parentId, request.parentType)
                 if (likeSuccessful){
+                    //create an activity
+                    activityService.addLikeActivity(
+                        byUserId = userId,
+                        parentType = ParentType.fromType(request.parentType),
+                        parentId = request.parentId
+                    )
                     call.respond(
                         status =  HttpStatusCode.OK,
                         message = BasicApiResponse(

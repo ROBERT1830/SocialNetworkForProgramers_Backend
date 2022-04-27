@@ -3,6 +3,8 @@ package robertconstantin.example.di
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
+import robertconstantin.example.data.repository.activity.ActivityRepository
+import robertconstantin.example.data.repository.activity.ActivityRepositoryImpl
 import robertconstantin.example.data.repository.comment.CommentRepository
 import robertconstantin.example.data.repository.comment.CommentRepositoryImpl
 import robertconstantin.example.data.repository.follow.FollowRepository
@@ -48,6 +50,8 @@ val mainModule = module {
 
     single<CommentRepository> { CommentRepositoryImpl(get()) }
 
+    single<ActivityRepository> { ActivityRepositoryImpl(get()) }
+
     /********PROVIDE THE USER SERVICE********/
 
     single {
@@ -60,4 +64,8 @@ val mainModule = module {
     single { LikeService(get()) }
 
     single {CommentService(get())}
+
+    single {
+        ActivityService(get(), get(), get()) //one get for each repo. koin will se what data is needed and then will come here to provide it.
+    }
 }

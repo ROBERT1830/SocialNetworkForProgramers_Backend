@@ -7,7 +7,8 @@ data class Like(
 
     val userId: String,
     //could be a post or could be a comment
-    val parentId: String,
+    val parentId: String, //is nice to use it because could be a post or a comment and we dont care
+    val parentType: Int,
     @BsonId
     val id: String = ObjectId().toString(),
 )

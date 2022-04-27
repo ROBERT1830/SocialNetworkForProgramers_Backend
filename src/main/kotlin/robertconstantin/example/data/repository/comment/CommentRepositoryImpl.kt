@@ -11,8 +11,9 @@ class CommentRepositoryImpl(
     val comments = db.getCollection<Comment>()
 
 
-    override suspend fun createComment(comment: Comment) {
+    override suspend fun createComment(comment: Comment): String {
         comments.insertOne(comment)
+        return comment.id
 
     }
 
@@ -20,6 +21,12 @@ class CommentRepositoryImpl(
 
         val deleteCount = comments.deleteOneById(commentId).deletedCount
         return deleteCount > 0
+    }
+
+    override suspend fun deleteCommentsFromPost(postId: String): Boolean {
+        return comments.deleteMany(
+            Comment::postId eq postId
+        ).wasAcknowledged() // returns true if the write in the db was successfull.
     }
 
     override suspend fun getCommentsForPost(postId: String): List<Comment> {

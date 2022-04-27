@@ -13,6 +13,7 @@ import robertconstantin.example.data.requests.CreatePostRequest
 import robertconstantin.example.data.requests.DeletePostRequest
 import robertconstantin.example.data.requests.FollowUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
+import robertconstantin.example.service.CommentService
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.PostService
 import robertconstantin.example.service.UserService
@@ -151,7 +152,8 @@ fun Route.getPostsForFollows(
 
 fun Route.deletePost(
     postService: PostService,
-    likeService: LikeService
+    likeService: LikeService,
+    commentService: CommentService
 ){
     authenticate {
         //here we have a delete post reqeust. So we need a new request model which will be get from client side
@@ -178,6 +180,7 @@ fun Route.deletePost(
                     postService.deletePost(request.postId)
                     likeService.deleteLikesForParent(request.postId)
                     // TODO: 25/4/22 delete comments from post
+                    commentService.deleteCommentsForPost(request.postId)
                     call.respond(HttpStatusCode.OK)
                 }else{
                     call.respond( HttpStatusCode.Unauthorized)

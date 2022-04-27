@@ -10,6 +10,7 @@ import robertconstantin.example.data.requests.CreateCommentRequest
 import robertconstantin.example.data.requests.DeleteCommentRequest
 import robertconstantin.example.data.requests.DeletePostRequest
 import robertconstantin.example.data.responses.BasicApiResponse
+import robertconstantin.example.service.ActivityService
 import robertconstantin.example.service.CommentService
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.UserService
@@ -17,7 +18,8 @@ import robertconstantin.example.util.ApiResponseMessages
 import robertconstantin.example.util.QueryParams
 
 fun Route.createComments(
-    commentService: CommentService
+    commentService: CommentService,
+    activityService: ActivityService
 ){
     authenticate {
         route("api/comment/create"){
@@ -27,7 +29,8 @@ fun Route.createComments(
                     return@post
                 }
 
-                when(commentService.createComment(request, call.userId)){
+                val userId = call.userId
+                when(commentService.createComment(request, userId)){
                     is CommentService.ValidationEvent.ErrorFieldEmpty -> {
                         call.respond(
                             HttpStatusCode.OK,
@@ -48,6 +51,11 @@ fun Route.createComments(
 
                     }
                     is CommentService.ValidationEvent.Success -> {
+                        activityService.addCommentActivity(
+                            byUserId = userId,
+                            postId = request.postId, //this is the parent
+                            //commentId = result.commentId
+                        )
                         call.respond(
                             HttpStatusCode.OK,
                             BasicApiResponse(
