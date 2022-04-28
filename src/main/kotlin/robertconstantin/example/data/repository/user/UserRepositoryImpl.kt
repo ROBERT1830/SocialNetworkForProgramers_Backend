@@ -5,6 +5,7 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.or
 import org.litote.kmongo.regex
 import robertconstantin.example.data.models.User
+import robertconstantin.example.data.requests.UpdateProfileRequest
 
 /**
  * Here we have a simple mvc pattern where the controller access the database
@@ -36,6 +37,38 @@ class UserRepositoryImpl(
         //Finds the first document that match the filter in the collection
         //for the filter user the document we want to look in and more specifically the variable
         return users.findOne(User::email eq email)
+    }
+
+    override suspend fun updateUser(
+        userId: String,
+        profileImageurl : String,
+        updateProfileRequest: UpdateProfileRequest): Boolean {
+        //get default data from a given user
+        val user = getUserById(userId) ?: return false
+
+
+        //perform an update in mongo
+        return users.updateOneById(
+            //find the user to update using the userId we pass
+            id = userId,
+            //which collection we want to update? User collection. Which data?
+            update = User(
+                email = user.email,
+                username = updateProfileRequest.userName,
+                password = user.password,
+                profileImageUrl = profileImageurl,
+                bio = updateProfileRequest.bio,
+                githubUrl = updateProfileRequest.githubUrl,
+                instagramUrl = updateProfileRequest.instagramUrl,
+                linkedInUlr = updateProfileRequest.linkedInUrl,
+                skills = updateProfileRequest.skills,
+                //those dont chang
+                followingCount = user.followingCount,
+                followerCount = user.followerCount,
+                postCount = user.postCount,
+                id = user.id
+            )
+        ).wasAcknowledged()
     }
 
     //get the user by emailand check if the pasword matches when the user login

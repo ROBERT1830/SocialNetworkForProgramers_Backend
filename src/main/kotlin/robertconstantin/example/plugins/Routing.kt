@@ -2,9 +2,11 @@ package robertconstantin.example.plugins
 
 import io.ktor.routing.*
 import io.ktor.application.*
+import io.ktor.http.content.*
 import org.koin.ktor.ext.inject
 import robertconstantin.example.routes.*
 import robertconstantin.example.service.*
+import java.io.File
 
 fun Application.configureRouting() {
 
@@ -34,6 +36,9 @@ fun Application.configureRouting() {
             jwtSecret = jwtSecret
         )
         searchUser(userService)
+        getUserProfile(userService)
+        getPostsForProfile(postService)
+        updateUserProfile(userService)
 
         // Following routes
         followUser(followService, activityService)
@@ -51,6 +56,18 @@ fun Application.configureRouting() {
         getCommentsForPost(commentService)
         //Activity Routes
         getActivities(activityService)
+
+
+        //this will provide the files. With this files we will have the profile picture url
+//        static() {
+//            staticRootFolder = File("./static")
+//            //set the root folder for static files
+//            files("static")
+//        }
+
+        static {
+            resources("static")
+        }
     }
 }
 

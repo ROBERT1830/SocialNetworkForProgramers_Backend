@@ -5,48 +5,89 @@ import robertconstantin.example.data.repository.follow.FollowRepository
 import robertconstantin.example.data.repository.user.UserRepository
 import robertconstantin.example.data.requests.CreateAccountRequest
 import robertconstantin.example.data.requests.LoginRequest
+import robertconstantin.example.data.requests.UpdateProfileRequest
+import robertconstantin.example.data.responses.ProfileResponse
 import robertconstantin.example.data.responses.UserResponseItem
 
 class UserService(
     private val userRepository: UserRepository,
     private val followRepository: FollowRepository
 ) {
-    suspend fun doesUserWithEmailExist(email: String): Boolean{
+    suspend fun doesUserWithEmailExist(email: String): Boolean {
         return userRepository.getUserByEmail(email) != null
     }
 
+
     //userId comes from post that we obtained
-    suspend fun doesEmailBelongToUserId(email: String, userId:String): Boolean{
+    suspend fun doesEmailBelongToUserId(email: String, userId: String): Boolean {
         return userRepository.doesEmailBelongToUserId(email, userId)
     }
 
-    fun validateCreateAccountRequest(request: CreateAccountRequest): ValidationEvent{
+    fun validateCreateAccountRequest(request: CreateAccountRequest): ValidationEvent {
 
         //Cheack if the request is empty or not
-        if (request.email.isBlank() || request.password.isBlank() || request.username.isBlank()){
-           return ValidationEvent.ErrorFieldEmpty
+        if (request.email.isBlank() || request.password.isBlank() || request.username.isBlank()) {
+            return ValidationEvent.ErrorFieldEmpty
         }
         return ValidationEvent.SuccessEvent
     }
 
-    suspend fun getUserByEmail(email:String): User? {
+    //callerUserId --> who makes the reqeust to se profile
+    //userId ---> the userId that you want to se the profile
+    suspend fun getUserProfile(userId: String, callerUserId: String): ProfileResponse? {
+
+        val user = userRepository.getUserById(userId) ?: return null
+        return ProfileResponse(
+            username = user.username,
+            bio = user.bio,
+            followerCount = user.followerCount,
+            followingCount = user.followingCount,
+            postCount = user.postCount,
+            profilePictureUrl = user.profileImageUrl,
+            topSkillUrls = user.skills,
+            gitHubUrl = user.githubUrl,
+            instagramUrl = user.instagramUrl,
+            linkedInUrl = user.linkedInUlr,
+            isOwnProfile = userId == callerUserId,
+            /*only perform the query to if is not ourselves. callerUserId --> from token */
+            isFollowing = if (userId != callerUserId) {
+                //check if the callerUserid follow the userId of this profile
+                followRepository.doesUserFollow(callerUserId, userId)
+            } else {
+                false
+            }
+
+
+        )
+    }
+
+    suspend fun getUserByEmail(email: String): User? {
         return userRepository.getUserByEmail(email)
     }
-    fun isValidPassword(enteredPassword: String, actualPassword: String): Boolean{
+
+    fun isValidPassword(enteredPassword: String, actualPassword: String): Boolean {
         return enteredPassword == actualPassword
     }
 
-    suspend fun doesPasswordMatchForUser(request: LoginRequest): Boolean{
-       return userRepository.doesPasswordForUserMatch(
+    suspend fun doesPasswordMatchForUser(request: LoginRequest): Boolean {
+        return userRepository.doesPasswordForUserMatch(
             email = request.email,
             enteredPassword = request.password
         )
     }
 
+    suspend fun updateUser(
+        userId: String,
+        profileImageUrl: String,
+        updateProfileRequest: UpdateProfileRequest
+    ): Boolean {
+        return userRepository.updateUser(userId, profileImageUrl, updateProfileRequest)
+    }
+
     /**
      * Find all followers of that user
      */
-    suspend fun searchForUsers(query: String, userId: String): List<UserResponseItem>{
+    suspend fun searchForUsers(query: String, userId: String): List<UserResponseItem> {
         //list of users from db that matches the query.
         val users = userRepository.searchForUsers(query)
         //get all following documents in which the current user appear. That means get all collections in which
@@ -80,7 +121,7 @@ class UserService(
     }
 
 
-    suspend fun createUser(request: CreateAccountRequest){
+    suspend fun createUser(request: CreateAccountRequest) {
         userRepository.createUser(
             User(
                 email = request.email,
@@ -95,9 +136,14 @@ class UserService(
         )
     }
 
+    /**
+     * To get the user data profile We need a function to take the user object and map it to a
+     * reponse object.
+     */
+
     /********************/
     sealed class ValidationEvent {
-        object ErrorFieldEmpty: ValidationEvent()
-        object SuccessEvent: ValidationEvent()
+        object ErrorFieldEmpty : ValidationEvent()
+        object SuccessEvent : ValidationEvent()
     }
 }

@@ -80,6 +80,20 @@ class PostRepositoryImpl(
 
         return posts.findOneById(postId)
     }
+
+    /**
+     * We want to return the post which has the user id eq to user id.
+     */
+    override suspend fun getPostForProfile(userId: String, page: Int, pageSize: Int): List<Post> {
+       return posts.find(
+            Post::userId eq userId
+        )
+            .skip(page * pageSize)
+            .limit(pageSize) //we onluy want 15 elements at once.
+            .descendingSort(Post::timestamp) //order descending because we want that those post made eariel to appear first
+            .toList()
+
+    }
 }
 
 

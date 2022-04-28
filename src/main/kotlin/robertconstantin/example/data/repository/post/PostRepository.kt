@@ -14,6 +14,12 @@ interface PostRepository {
         pageSize: Int
     ): List<Post>
 
+    suspend fun getPostForProfile(
+        userId: String,
+        page: Int  = 0,
+        pageSize: Int
+    ): List<Post>
+
     suspend fun getPost(postId: String): Post?
 
 

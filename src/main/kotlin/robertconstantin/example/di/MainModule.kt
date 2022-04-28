@@ -1,5 +1,6 @@
 package robertconstantin.example.di
 
+import com.google.gson.Gson
 import org.koin.dsl.module
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
@@ -68,4 +69,6 @@ val mainModule = module {
     single {
         ActivityService(get(), get(), get()) //one get for each repo. koin will se what data is needed and then will come here to provide it.
     }
+    //for multipart
+    single { Gson() }
 }

@@ -1,6 +1,7 @@
 package robertconstantin.example.data.repository.user
 
 import robertconstantin.example.data.models.User
+import robertconstantin.example.data.requests.UpdateProfileRequest
 
 /**
  * This is very usefull for testing. Lets say we wanto to test this user userController. Then
@@ -17,6 +18,11 @@ interface UserRepository {
     suspend fun getUserById(id: String): User?
 
     suspend fun getUserByEmail(email: String): User?
+
+    suspend fun updateUser(
+        userId: String,
+        profileImageUrl: String,
+        updateProfileRequest: UpdateProfileRequest): Boolean
 
     //function that gets a user and checks if the paswword is what the user entered
     suspend fun doesPasswordForUserMatch(email:String, enteredPassword: String): Boolean
