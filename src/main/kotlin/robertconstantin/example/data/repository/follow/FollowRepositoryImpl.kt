@@ -75,6 +75,23 @@ class FollowRepositoryImpl(
 
 
     }
+
+    override suspend fun doesUserFollow(followingUserId: String, followedUserId: String): Boolean {
+
+        return following.findOne(
+            and(
+                Following::followingUserId eq followingUserId,
+                Following::followedUserId eq followedUserId
+            )
+        ) != null
+    }
+
+    override suspend fun getFollowsbyUser(userId: String): List<Following> {
+        //get all documents that match current userId.
+        return following.find(
+            Following::followingUserId eq userId
+         ).toList()
+    }
 }
 
 

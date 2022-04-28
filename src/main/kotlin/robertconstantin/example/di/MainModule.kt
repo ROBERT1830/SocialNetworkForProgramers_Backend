@@ -55,7 +55,7 @@ val mainModule = module {
     /********PROVIDE THE USER SERVICE********/
 
     single {
-        UserService(get())
+        UserService(get(), get())
     }
     single { FollowService(get()) }
 

@@ -3,10 +3,12 @@ package robertconstantin.example.routes
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import robertconstantin.example.data.models.User
 import robertconstantin.example.data.requests.CreateAccountRequest
 import robertconstantin.example.data.requests.LoginRequest
 import robertconstantin.example.data.responses.AuthResponse
@@ -15,6 +17,7 @@ import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages.FIELDS_BLANK
 import robertconstantin.example.util.ApiResponseMessages.INVALID_CREDENTIALS
 import robertconstantin.example.util.ApiResponseMessages.USER_ALREADY_EXISTS
+import robertconstantin.example.util.QueryParams.PARAM_QUERY
 import java.util.*
 
 fun Route.createUser(userService: UserService){
@@ -187,6 +190,31 @@ fun Route.loginUser(
                 )
             }
 
+        }
+    }
+}
+
+/**
+ * When the user search the info that will be displayed will be
+ * the image profile, user name, bio, and if we already follwoing or not
+ */
+fun Route.searchUser(userService: UserService){
+    authenticate {
+        get("/api/user/search") {
+            val query = call.parameters[PARAM_QUERY]
+            if (query == null || query.isBlank()){
+                call.respond(
+                    status = HttpStatusCode.OK,
+                    listOf<User>()
+                )
+                return@get
+            }
+            val searchResults = userService.searchForUsers(query, call.userId)
+            // TODO: 28/4/22 check if list of userResponseItem is empty. Means that current user doesn't follow somebody that matches that query.
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = searchResults
+            )
         }
     }
 }

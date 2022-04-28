@@ -24,4 +24,6 @@ interface UserRepository {
     //to verify that the email from whom is gona create a post belong to user id.
     suspend fun doesEmailBelongToUserId(email: String, userId: String): Boolean
 
+    suspend fun searchForUsers(query: String): List<User>
+
 }

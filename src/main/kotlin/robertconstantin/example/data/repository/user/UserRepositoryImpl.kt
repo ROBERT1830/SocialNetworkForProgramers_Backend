@@ -2,6 +2,8 @@ package robertconstantin.example.data.repository.user
 
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
+import org.litote.kmongo.or
+import org.litote.kmongo.regex
 import robertconstantin.example.data.models.User
 
 /**
@@ -59,6 +61,23 @@ class UserRepositoryImpl(
         *
         * So we check that the user with that id has the same email as the user who made the request*/
         return users.findOneById(userId)?.email == email
+    }
+
+    /**
+     * Searching in mongo requires regular expressions.
+     * If the query is contained in the user name nad not distinguish between lower and upper.
+     * (?i) ---> regular expresion for match lower and upper
+     * We use here a regex like contains in normal query or like %xxx%
+     *
+     *
+     */
+    override suspend fun searchForUsers(query: String): List<User> {
+        return users.find(
+            or(User::username regex  Regex("(?i).*$query.*"),
+                User::email eq query //if you want to search by email will work ass well. but need the full email because here we dont use regex.
+            )
+        ).toList()
+
     }
 }
 

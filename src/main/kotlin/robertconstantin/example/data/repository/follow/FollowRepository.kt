@@ -1,5 +1,7 @@
 package robertconstantin.example.data.repository.follow
 
+import robertconstantin.example.data.models.Following
+
 interface FollowRepository {
 
     /**To follow someone we should do it by email to search the user in the db and add him a
@@ -20,4 +22,8 @@ interface FollowRepository {
         followingUserId: String,
         followedUserId: String
     ): Boolean
+
+    suspend fun getFollowsbyUser(userId: String): List<Following>
+
+    suspend fun doesUserFollow(followingUserId: String, followedUserId: String): Boolean
 }
