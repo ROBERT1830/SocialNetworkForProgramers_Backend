@@ -4,7 +4,7 @@ import robertconstantin.example.data.models.Post
 
 interface PostRepository {
 
-    suspend fun createPostIfUserExists(post: Post): Boolean
+    suspend fun createPost(post: Post): Boolean
     suspend fun deletePost(postId: String)
 
     //function that retrieves th post by those people we follow

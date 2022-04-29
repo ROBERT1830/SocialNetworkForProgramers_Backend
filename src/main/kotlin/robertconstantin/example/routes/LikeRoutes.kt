@@ -13,6 +13,7 @@ import robertconstantin.example.service.ActivityService
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages
+import robertconstantin.example.util.QueryParams.PARAM_PARENT_ID
 
 fun Route.likeParent(
     likeService: LikeService,
@@ -117,5 +118,65 @@ fun Route.unlikeParent(
         }
     }
 
-
 }
+
+
+fun Route.getLikesForParent(likesService: LikeService){
+    authenticate {
+        get("api/like/parent") {
+
+            val parentId = call.parameters[PARAM_PARENT_ID] ?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            val usersWhoLikedParent = likesService.getUsersWhoLikedParent(
+                parentId = parentId,
+                call.userId
+            )
+
+            call.respond(
+                HttpStatusCode.OK,
+                usersWhoLikedParent
+            )
+
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

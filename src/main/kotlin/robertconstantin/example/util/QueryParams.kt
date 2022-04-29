@@ -8,4 +8,5 @@ object QueryParams {
     const val PARAM_POST_ID = "postId"
     const val PARAM_QUERY = "query"
     const val USER_ID = "userId"
+    const val PARAM_PARENT_ID = "parentId"
 }

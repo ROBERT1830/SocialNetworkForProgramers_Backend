@@ -1,31 +1,36 @@
 package robertconstantin.example.routes
 
+import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.auth.jwt.*
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import robertconstantin.example.data.models.Post
-import robertconstantin.example.data.repository.post.PostRepository
+import org.koin.ktor.ext.inject
 import robertconstantin.example.data.requests.CreatePostRequest
 import robertconstantin.example.data.requests.DeletePostRequest
-import robertconstantin.example.data.requests.FollowUpdateRequest
 import robertconstantin.example.data.responses.BasicApiResponse
 import robertconstantin.example.service.CommentService
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.PostService
 import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
+import robertconstantin.example.util.Constants
 import robertconstantin.example.util.Constants.DEFAULT_POST_PAGE_SIZE
 import robertconstantin.example.util.QueryParams.PARAM_PAGE
 import robertconstantin.example.util.QueryParams.PARAM_PAGE_SIZE
+import robertconstantin.example.util.save
+import java.io.File
+import java.util.*
 
 
 fun Route.cratePostRoute(
     postService: PostService
 ){
+    val gson by inject<Gson>()
 
     /*We have to authenticate first before doing the create post task. */
     /*This authenticaye will only let pass in request that actually have that valid token attatched.
@@ -39,67 +44,145 @@ fun Route.cratePostRoute(
                     return@post
                 }
 
-                //remember that in the withClain we actually attatch the unique email.
-                /*So the yser logs in and the user email is saved in the token whoch the user cant modifiy
-                * and here we get that email from that token*/
-//                val email = call.principal<JWTPrincipal>()?.getClaim("email", String::class) //email is a string
-//                //before create the post we want to verify that wmail of user made request of this route
-//                //uses its own email
-//                val isEmailByUser = userService.doesEmailBelongToUserId(
-//                    //the email is that one that is attatched in our token. Because that is something
-//                    //that the user cant modify
-//                    email = email?: "",
-//                    userId = request.userId
-//                //check if the email is equel of the user email that want to create  the post for
-//                )
+//                //remember that in the withClain we actually attatch the unique email.
+//                /*So the yser logs in and the user email is saved in the token whoch the user cant modifiy
+//                * and here we get that email from that token*/
+////                val email = call.principal<JWTPrincipal>()?.getClaim("email", String::class) //email is a string
+////                //before create the post we want to verify that wmail of user made request of this route
+////                //uses its own email
+////                val isEmailByUser = userService.doesEmailBelongToUserId(
+////                    //the email is that one that is attatched in our token. Because that is something
+////                    //that the user cant modify
+////                    email = email?: "",
+////                    userId = request.userId
+////                //check if the email is equel of the user email that want to create  the post for
+////                )
+////
+////                if (!isEmailByUser){
+////                    call.respond(
+////                        status = HttpStatusCode.Unauthorized,
+////                        message = "Your are not who you say you are."
+////                    )
+////                    return@post
+////                }
 //
-//                if (!isEmailByUser){
+//                //Above code could be writen like this using our own extension funciton.
+//
+//                /**
+//                 * If a user makes an authenticated request, then we can directly determine
+//                 * who make that request by using the userId.
+//                 * So the app doesnt pass that userId explicitely anymore. Instead we just determine it from the
+//                 * token.
+//                 */
+//                val userId = call.userId //userId contained in the token
+//
+//
+//                val didUserExists = postService.createPost(request, userId)
+//
+//                if (!didUserExists){
 //                    call.respond(
-//                        status = HttpStatusCode.Unauthorized,
-//                        message = "Your are not who you say you are."
+//                        HttpStatusCode.OK,
+//                        BasicApiResponse(
+//                            successful = false,
+//                            message = USER_NOT_FOUND
+//                        )
+//                    )
+//                } else{
+//                    call.respond(
+//                        HttpStatusCode.OK,
+//                        BasicApiResponse(
+//                            successful = true,
+//
+//                            )
+//                    )
+//                }
+//
+////                ifEmailBelongToUser(
+////                    userId = request.userId,
+////                    validateEmail = userService::doesEmailBelongToUserId
+////                ){
+////
+////                }
+
+
+                // -----------------------------------------------
+
+                /**
+                 * is not necesary to check if the user exists or not because we have its id in the token
+                 * and we know that he amkes a request is him and exists.
+                 */
+//                val didUserExists = postService.createPost(request, userId)
+//
+//                if (!didUserExists){
+//                    call.respond(
+//                        HttpStatusCode.OK,
+//                        BasicApiResponse(
+//                            successful = false,
+//                            message = USER_NOT_FOUND
+//                        )
 //                    )
 //                    return@post
 //                }
+                //receive the multipar if the user extists
+                val multipart = call.receiveMultipart()
+                var fileName: String? = null //contains the profile image
+                var createPostRequest: CreatePostRequest? = null
+                multipart.forEachPart { partData ->
+                    when (partData) {
+                        is PartData.FormItem -> {
+                            //"update_profile_data" used to detect the attatched json string of the multipart request.
+                            if (partData.name == "post_data") {
+                                createPostRequest =
+                                    gson.fromJson<CreatePostRequest>(
+                                        partData.value,
+                                        CreatePostRequest::class.java
+                                    )
+                            }
 
-                //Above code could be writen like this using our own extension funciton.
+                        }
+                        is PartData.FileItem -> {
+                            /**
+                             * Here we can create an extension function because we have duplicated code in update profile
+                             * because is the same code. So we can create an extension function in FileItem
+                             */
+                            fileName = partData.save(Constants.POST_PICTURE_PATH)
 
-                /**
-                 * If a user makes an authenticated request, then we can directly determine
-                 * who make that request by using the userId.
-                 * So the app doesnt pass that userId explicitely anymore. Instead we just determine it from the
-                 * token.
-                 */
-                val userId = call.userId //userId contained in the token
-
-                val didUserExist = postService.createPostIfUserExists(request, userId)
-                val didUserExists = postService.createPostIfUserExists(request, userId)
-
-                if (!didUserExists){
-                    call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                            successful = false,
-                            message = USER_NOT_FOUND
-                        )
-                    )
-                } else{
-                    call.respond(
-                        HttpStatusCode.OK,
-                        BasicApiResponse(
-                            successful = true,
-
-                            )
-                    )
+                        }
+                        is PartData.BinaryItem -> Unit
+                    }
                 }
 
-//                ifEmailBelongToUser(
-//                    userId = request.userId,
-//                    validateEmail = userService::doesEmailBelongToUserId
-//                ){
-//
-//                }
+                //The file is uploaded
+                val postPictureUrl = "${Constants.BASE_URL}post_pictures/$fileName"
+                /**
+                 * when createPostRequest is not null. that menas that we attatched te request (with the JSON) and we saved an image in
+                 * the file syste,
+                 */
+                createPostRequest?.let { request ->
+                    //now update the user entry in the db
+                    val createPostAcknowledge = postService.createPost(
+                        request = request,
+                        userId = call.userId,
+                        imageUrl = postPictureUrl
+                    )
+                    if (createPostAcknowledge){
+                        call.respond(
+                            status = HttpStatusCode.OK,
+                            message = BasicApiResponse(
+                                successful = true
+                            )
+                        )
+                    }else{
+                        //If the update of the profile was not succesful for some reason we want to delete
+                        //the file we created with the image.
+                        File("${Constants.POST_PICTURE_PATH}/$fileName").delete()
+                        call.respond(HttpStatusCode.InternalServerError)
+                    }
+                } ?: kotlin.run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@post
 
-
+                }
 
 
 

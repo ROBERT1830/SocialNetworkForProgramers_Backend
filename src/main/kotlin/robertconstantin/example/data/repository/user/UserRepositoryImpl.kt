@@ -1,5 +1,6 @@
 package robertconstantin.example.data.repository.user
 
+import org.litote.kmongo.`in`
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import org.litote.kmongo.or
@@ -109,7 +110,15 @@ class UserRepositoryImpl(
             or(User::username regex  Regex("(?i).*$query.*"),
                 User::email eq query //if you want to search by email will work ass well. but need the full email because here we dont use regex.
             )
-        ).toList()
+        )
+            .descendingSort(User::followerCount) //higher number of follower appear before
+            .toList()
+
+    }
+
+    override suspend fun getUsers(userIds: List<String>): List<User> {
+        //find where
+        return users.find(User::id `in` userIds).toList()
 
     }
 }

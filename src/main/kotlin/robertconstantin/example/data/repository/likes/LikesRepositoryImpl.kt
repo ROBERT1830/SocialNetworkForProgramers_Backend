@@ -4,6 +4,7 @@ import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import robertconstantin.example.data.models.Like
+import robertconstantin.example.data.models.Post
 import robertconstantin.example.data.models.User
 import robertconstantin.example.data.models.util.ParentType
 
@@ -29,7 +30,7 @@ class LikesRepositoryImpl(
         return if (doesUserExist){
             likes.insertOne(
                 //insert an object which is a post object.
-                Like(userId = userId, parentId = parentId, parentType)
+                Like(userId = userId, parentId = parentId, parentType, System.currentTimeMillis())
             )
             true
         }else{
@@ -58,6 +59,15 @@ class LikesRepositoryImpl(
     override suspend fun deleteLikesForParent(parentId: String) {
         //When we delete a post we will delete all the likes that has the postId we passed.
         likes.deleteMany(Like::parentId eq parentId)
+    }
+
+    override suspend fun getLikesForParent(parentId: String, page:Int, pageSize: Int): List<Like> {
+
+        return likes.find(Like::parentId eq parentId)
+            .skip(page * pageSize)
+            .limit(pageSize)
+            .descendingSort(Like::timestamp)
+            .toList()
     }
 }
 

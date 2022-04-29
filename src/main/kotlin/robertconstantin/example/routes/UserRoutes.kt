@@ -29,6 +29,7 @@ import robertconstantin.example.util.Constants.PROFILE_PICTURE_PATH
 import robertconstantin.example.util.QueryParams
 import robertconstantin.example.util.QueryParams.PARAM_QUERY
 import robertconstantin.example.util.QueryParams.USER_ID
+import robertconstantin.example.util.save
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
@@ -342,17 +343,23 @@ fun Route.updateUserProfile(userService: UserService) {
 
                     }
                     is PartData.FileItem -> {
-                        println(Paths.get("").toAbsolutePath().toString())
-                        //create a stream to the file and read its bytes
-                        val fileBytes = partData.streamProvider().readBytes()
-                        //get the original file extension after dot. For example if you upload image.png the extension will be png
-                        val fileExtension = partData.originalFileName?.takeLastWhile {
-                            it != '.'
-                        }
-                        //random file name with the original file extension
-                        fileName = UUID.randomUUID().toString() + "." + fileExtension
-                        //create a file in whih we write the bites of the image. the path of the file should be in src/main and are palved in resources/static/profile_pictures
-                        File("$PROFILE_PICTURE_PATH$fileName").writeBytes(fileBytes)
+//                        println(Paths.get("").toAbsolutePath().toString())
+//                        //create a stream to the file and read its bytes
+//                        val fileBytes = partData.streamProvider().readBytes()
+//                        //get the original file extension after dot. For example if you upload image.png the extension will be png
+//                        val fileExtension = partData.originalFileName?.takeLastWhile {
+//                            it != '.'
+//                        }
+//                        //random file name with the original file extension
+//                        fileName = UUID.randomUUID().toString() + "." + fileExtension
+//                        //create a file in whih we write the bites of the image. the path of the file should be in src/main and are palved in resources/static/profile_pictures
+//                        File("$PROFILE_PICTURE_PATH$fileName").writeBytes(fileBytes)
+
+                        /**
+                         * Useing of an extension function for a cleaner code.
+                         */
+                        fileName = partData.save(PROFILE_PICTURE_PATH)
+
                     }
                     is PartData.BinaryItem -> Unit
                 }

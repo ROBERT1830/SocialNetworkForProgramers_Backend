@@ -86,6 +86,7 @@ class UserService(
 
     /**
      * Find all followers of that user
+     *
      */
     suspend fun searchForUsers(query: String, userId: String): List<UserResponseItem> {
         //list of users from db that matches the query.
