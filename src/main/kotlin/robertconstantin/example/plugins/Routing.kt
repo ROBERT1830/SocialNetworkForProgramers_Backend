@@ -27,6 +27,7 @@ fun Application.configureRouting() {
     val jwtSecret = environment.config.property("jwt.secret").getString()
     routing {
         // User routes
+        authenticate()
         // for access and make changes to the User documents
         createUser(userService)
         loginUser(

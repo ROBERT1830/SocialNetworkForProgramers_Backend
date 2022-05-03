@@ -39,10 +39,10 @@ fun Route.cratePostRoute(
     authenticate {
         route("/api/post/create"){
             post {
-                val request = call.receiveOrNull<CreatePostRequest>() ?: kotlin.run {
-                    call.respond(HttpStatusCode.BadRequest)
-                    return@post
-                }
+//                val request = call.receiveOrNull<CreatePostRequest>() ?: kotlin.run {
+//                    call.respond(HttpStatusCode.BadRequest)
+//                    return@post
+//                }
 
 //                //remember that in the withClain we actually attatch the unique email.
 //                /*So the yser logs in and the user email is saved in the token whoch the user cant modifiy
@@ -168,7 +168,7 @@ fun Route.cratePostRoute(
                     if (createPostAcknowledge){
                         call.respond(
                             status = HttpStatusCode.OK,
-                            message = BasicApiResponse(
+                            message = BasicApiResponse<Unit>(
                                 successful = true
                             )
                         )

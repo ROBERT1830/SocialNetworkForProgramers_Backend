@@ -34,7 +34,7 @@ fun Route.createComments(
                     is CommentService.ValidationEvent.ErrorFieldEmpty -> {
                         call.respond(
                             HttpStatusCode.OK,
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = false,
                                 message = ApiResponseMessages.FIELDS_BLANK
                             )
@@ -43,7 +43,7 @@ fun Route.createComments(
                     is CommentService.ValidationEvent.ErrorCommentTooLong -> {
                         call.respond(
                             HttpStatusCode.OK,
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = false,
                                 message = ApiResponseMessages.COMMENT_TOO_LONG
                             )
@@ -58,7 +58,7 @@ fun Route.createComments(
                         )
                         call.respond(
                             HttpStatusCode.OK,
-                            BasicApiResponse(
+                            BasicApiResponse<Unit>(
                                 successful = true,
                             )
                         )
@@ -123,12 +123,12 @@ fun Route.deleteComment(
                 likeService.deleteLikesForParent(request.commentId)
                 call.respond(
                     status = HttpStatusCode.OK,
-                    message = BasicApiResponse(successful = true)
+                    message = BasicApiResponse<Unit>(successful = true)
                 )
             }else{
                 call.respond(
                     status = HttpStatusCode.NotFound,
-                    message = BasicApiResponse(successful = false)
+                    message = BasicApiResponse<Unit>(successful = false)
                 )
             }
 //            ifEmailBelongToUser(

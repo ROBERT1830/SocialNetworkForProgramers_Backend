@@ -41,14 +41,14 @@ fun Route.likeParent(
                     )
                     call.respond(
                         status =  HttpStatusCode.OK,
-                        message = BasicApiResponse(
+                        message = BasicApiResponse<Unit>(
                             successful = true
                         )
                     )
                 }else{
                     call.respond(
                         status = HttpStatusCode.OK,
-                        message = BasicApiResponse(
+                        message = BasicApiResponse<Unit>(
                             successful = false,
                             message = ApiResponseMessages.USER_NOT_FOUND
                         )
@@ -90,14 +90,14 @@ fun Route.unlikeParent(
                 if (unlikeSuccessful){
                     call.respond(
                         status =  HttpStatusCode.OK,
-                        message = BasicApiResponse(
+                        message = BasicApiResponse<Unit>(
                             successful = true
                         )
                     )
                 }else{
                     call.respond(
                         status = HttpStatusCode.OK,
-                        message = BasicApiResponse(
+                        message = BasicApiResponse<Unit>(
                             successful = false,
                             message = ApiResponseMessages.USER_NOT_FOUND
                         )
