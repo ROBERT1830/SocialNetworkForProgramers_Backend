@@ -1,5 +1,7 @@
 package robertconstantin.example.data.requests
 
+import robertconstantin.example.data.responses.SkillDto
+
 /**
  * we will upload the picture toguether with this reqeust
  */
@@ -11,7 +13,7 @@ data class UpdateProfileRequest(
     val githubUrl: String,
     val instagramUrl: String,
     val linkedInUrl: String,
-    val skills: List<String>,
+    val skills: List<SkillDto>, //a dto that arrives from client
     val profileImageChanged: Boolean = false
 
 )

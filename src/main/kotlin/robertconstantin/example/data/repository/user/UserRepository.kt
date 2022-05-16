@@ -21,7 +21,8 @@ interface UserRepository {
 
     suspend fun updateUser(
         userId: String,
-        profileImageUrl: String,
+        profileImageUrl: String?,
+        bannerUrl: String?,
         updateProfileRequest: UpdateProfileRequest): Boolean
 
     //function that gets a user and checks if the paswword is what the user entered

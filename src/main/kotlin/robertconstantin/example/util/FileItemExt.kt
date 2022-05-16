@@ -8,19 +8,19 @@ import java.util.*
 //this function will return the file name
 fun PartData.FileItem.save(path: String): String{
 
-    //create a stream to the file and read its bytes
+    //create a stream to the income file and read its bytes
     //this is part data
     val fileBytes = this.streamProvider().readBytes()
     //get the original file extension after dot. For example if you upload image.png the extension will be png
     val fileExtension = this.originalFileName?.takeLastWhile {
         it != '.'
     }
-    //random file name with the original file extension
+    //random file name with the original file extension for the server
     val fileName = UUID.randomUUID().toString() + "." + fileExtension
     val folder = File(path)
     //create a file in whih we write the bites of the image. the path of the file should be in src/main and are palved in resources/static/profile_pictures
 
     folder.mkdirs()
-    File("$path$fileName").writeBytes(fileBytes)
+    File("$path$fileName").writeBytes(fileBytes) //write the bytes from the file request onto the server system.
     return fileName
 }

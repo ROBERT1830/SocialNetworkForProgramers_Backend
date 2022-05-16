@@ -6,6 +6,7 @@ import robertconstantin.example.data.models.util.ParentType
 import robertconstantin.example.data.repository.activity.ActivityRepository
 import robertconstantin.example.data.repository.comment.CommentRepository
 import robertconstantin.example.data.repository.post.PostRepository
+import robertconstantin.example.data.responses.ActivityResponse
 import robertconstantin.example.util.Constants
 
 class ActivityService(
@@ -18,7 +19,7 @@ class ActivityService(
         userId: String,
         page: Int = 0,
         pageSize: Int = Constants.DEFAULT_ACTIVITY_PAGE_SIZE
-    ): List<Activity> {
+    ): List<ActivityResponse> {
         return activityRepository.getActivitiesForUser(userId, page, pageSize)
     }
 

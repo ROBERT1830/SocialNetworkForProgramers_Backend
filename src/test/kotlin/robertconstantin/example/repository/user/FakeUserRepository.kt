@@ -2,6 +2,7 @@ package robertconstantin.example.repository.user
 
 import robertconstantin.example.data.models.User
 import robertconstantin.example.data.repository.user.UserRepository
+import robertconstantin.example.data.requests.UpdateProfileRequest
 
 /**
  * Here we have created a fake version of our UserRepositryimpl that behavies the same way but just for singl etest case
@@ -30,9 +31,29 @@ class FakeUserRepository: UserRepository {
         return users.find { it.email == email }
     }
 
+    override suspend fun updateUser(
+        userId: String,
+        profileImageUrl: String?,
+        bannerUrl: String?,
+        updateProfileRequest: UpdateProfileRequest
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun doesPasswordForUserMatch(email: String, enteredPassword: String): Boolean {
 
         val user = getUserByEmail(email)
         return user?.password == enteredPassword
+    }
+
+    override suspend fun doesEmailBelongToUserId(email: String, userId: String): Boolean {
+    }
+
+    override suspend fun searchForUsers(query: String): List<User> {
+
+    }
+
+    override suspend fun getUsers(userIds: List<String>): List<User> {
+
     }
 }

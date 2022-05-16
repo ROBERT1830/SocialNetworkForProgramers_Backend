@@ -38,13 +38,15 @@ class UserService(
 
         val user = userRepository.getUserById(userId) ?: return null
         return ProfileResponse(
+            userId = user.id,
             username = user.username,
             bio = user.bio,
             followerCount = user.followerCount,
             followingCount = user.followingCount,
             postCount = user.postCount,
             profilePictureUrl = user.profileImageUrl,
-            topSkillUrls = user.skills,
+            bannerUrl = user.bannerUrl,
+            topSkills = user.skills,
             gitHubUrl = user.githubUrl,
             instagramUrl = user.instagramUrl,
             linkedInUrl = user.linkedInUlr,
@@ -78,10 +80,11 @@ class UserService(
 
     suspend fun updateUser(
         userId: String,
-        profileImageUrl: String,
+        profileImageUrl: String?,
+        bannerUrl: String?,
         updateProfileRequest: UpdateProfileRequest
     ): Boolean {
-        return userRepository.updateUser(userId, profileImageUrl, updateProfileRequest)
+        return userRepository.updateUser(userId, profileImageUrl, bannerUrl,updateProfileRequest)
     }
 
     /**
@@ -111,11 +114,16 @@ class UserService(
             //
             val isFollowing = followsByUser.find { it.followedUserId == user.id } != null //if ginf and is not null
             UserResponseItem(
+                userId = user.id,
                 userName = user.username,
                 profilePictureUrl = user.profileImageUrl,
                 bio = user.bio,
                 isFollowing = isFollowing
             )
+            //Keep only the entries that are not the current user collection because we dont want to se
+            //our profile in the when search
+        }.filter {
+            it.userId != userId
         }
 
         //we need a function to check if a user with a given id follows a user with an other id.
@@ -129,6 +137,7 @@ class UserService(
                 username = request.username,
                 password = request.password,
                 profileImageUrl = "",
+                bannerUrl = "",
                 bio = "",
                 githubUrl = null,
                 instagramUrl = null,

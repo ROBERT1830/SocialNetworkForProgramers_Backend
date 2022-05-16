@@ -18,6 +18,7 @@ fun Application.configureRouting() {
     val likeService: LikeService by inject()
     val commentService: CommentService by inject()
     val activityService: ActivityService by inject()
+    val skillService: SkillService by inject()
 
 
     //access the aplication.conf file to get the domain and all the stuf for jwt.
@@ -58,6 +59,9 @@ fun Application.configureRouting() {
         getCommentsForPost(commentService)
         //Activity Routes
         getActivities(activityService)
+
+        // Skill routes
+        getSkills(skillService = skillService )
 
 
         //this will provide the files. With this files we will have the profile picture url

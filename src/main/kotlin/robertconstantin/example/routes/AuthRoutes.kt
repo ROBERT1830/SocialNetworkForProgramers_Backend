@@ -177,6 +177,7 @@ fun Route.loginUser(
                     message = BasicApiResponse(
                         successful = true,
                         data = AuthResponse(
+                            userId = user.id,
                             token = token
                         )
                     )
@@ -204,7 +205,7 @@ fun Route.loginUser(
  */
 fun Route.authenticate(){
     authenticate {
-        get("api/user/authenticate") {
+        get("/api/user/authenticate") {
             //When we get the response here we know that we are succesfully authenticated
             call.respond(HttpStatusCode.OK)
             //if ht token expired then will tell the user to login again and will show the login screen again

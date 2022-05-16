@@ -20,6 +20,7 @@ import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
 import robertconstantin.example.util.Constants
 import robertconstantin.example.util.Constants.DEFAULT_POST_PAGE_SIZE
+import robertconstantin.example.util.QueryParams
 import robertconstantin.example.util.QueryParams.PARAM_PAGE
 import robertconstantin.example.util.QueryParams.PARAM_PAGE_SIZE
 import robertconstantin.example.util.save
@@ -153,13 +154,13 @@ fun Route.cratePostRoute(
                 }
 
                 //The file is uploaded
-                val postPictureUrl = "${Constants.BASE_URL}post_pictures/$fileName"
+                val postPictureUrl = "${Constants.BASE_URL}post_pictures/$fileName" //can be reached because is static, we specified in routing that resources can be reached directly from staic folder.
                 /**
                  * when createPostRequest is not null. that menas that we attatched te request (with the JSON) and we saved an image in
                  * the file syste,
                  */
                 createPostRequest?.let { request ->
-                    //now update the user entry in the db
+
                     val createPostAcknowledge = postService.createPost(
                         request = request,
                         userId = call.userId,
@@ -190,6 +191,32 @@ fun Route.cratePostRoute(
         }
     }
 
+}
+
+
+fun Route.getPostsForProfile(
+    postService: PostService
+) {
+    authenticate {
+        get("/api/user/posts") {
+            //pass the userId from where we want to get the posts. Because mayby should be some else profile.
+            //But when we want to se our own profile, then we won't attatch an id. So will be used ours.
+            val userId = call.parameters[QueryParams.USER_ID]
+            val page = call.parameters[QueryParams.PARAM_PAGE]?.toIntOrNull()
+                ?: 0 //if null get first page. convert to int the parameter from the query
+            val pageSize =
+                call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_POST_PAGE_SIZE
+            val posts = postService.getPostForProfile(
+                userId = userId ?: call.userId,
+                page = page,
+                pageSize = pageSize
+            )
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = posts
+            )
+        }
+    }
 }
 
 fun Route.getPostsForFollows(

@@ -42,7 +42,8 @@ class UserRepositoryImpl(
 
     override suspend fun updateUser(
         userId: String,
-        profileImageurl : String,
+        profileImageurl : String?,
+        bannerUrl:String?,
         updateProfileRequest: UpdateProfileRequest): Boolean {
         //get default data from a given user
         val user = getUserById(userId) ?: return false
@@ -57,7 +58,8 @@ class UserRepositoryImpl(
                 email = user.email,
                 username = updateProfileRequest.userName,
                 password = user.password,
-                profileImageUrl = profileImageurl,
+                profileImageUrl = profileImageurl ?: user.profileImageUrl, //only update the values it the profile image url is not null
+                bannerUrl = bannerUrl ?: user.bannerUrl,
                 bio = updateProfileRequest.bio,
                 githubUrl = updateProfileRequest.githubUrl,
                 instagramUrl = updateProfileRequest.instagramUrl,

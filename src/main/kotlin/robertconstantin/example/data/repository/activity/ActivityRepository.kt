@@ -1,6 +1,7 @@
 package robertconstantin.example.data.repository.activity
 
 import robertconstantin.example.data.models.Activity
+import robertconstantin.example.data.responses.ActivityResponse
 import robertconstantin.example.util.Constants.DEFAULT_ACTIVITY_PAGE_SIZE
 
 interface ActivityRepository {
@@ -8,7 +9,7 @@ interface ActivityRepository {
     suspend fun getActivitiesForUser(
         userId: String,
         page: Int = 0,
-        pageSize: Int = DEFAULT_ACTIVITY_PAGE_SIZE): List<Activity>
+        pageSize: Int = DEFAULT_ACTIVITY_PAGE_SIZE): List<ActivityResponse>
 
     suspend fun createActivity(activity: Activity)
 

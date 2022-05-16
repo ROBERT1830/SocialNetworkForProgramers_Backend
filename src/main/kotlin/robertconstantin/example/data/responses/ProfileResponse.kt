@@ -4,6 +4,7 @@ package robertconstantin.example.data.responses
  * This reposnse could be used to display the initial data for current user profile.
  */
 data class ProfileResponse(
+    val userId: String,
     val username: String,
     val bio: String,
     /**Maybe this is not a good way to do represent the number of those because
@@ -15,7 +16,8 @@ data class ProfileResponse(
     val postCount: Int,
     /****/
     val profilePictureUrl: String,
-    val topSkillUrls: List<String>,
+    val bannerUrl: String?,
+    val topSkills: List<SkillDto>, //we removed the id form the Skill so cant pare the object.
     val gitHubUrl:String?,
     val instagramUrl: String?,
     val linkedInUrl: String?,

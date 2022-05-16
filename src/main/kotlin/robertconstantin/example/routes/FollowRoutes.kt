@@ -14,6 +14,7 @@ import robertconstantin.example.data.responses.BasicApiResponse
 import robertconstantin.example.service.ActivityService
 import robertconstantin.example.service.FollowService
 import robertconstantin.example.util.ApiResponseMessages.USER_NOT_FOUND
+import robertconstantin.example.util.QueryParams
 
 /**
  * That route will be used to follow a user
@@ -72,35 +73,42 @@ fun Route.followUser(
 
 }
 
+/**
+ * When perfom a delete reqeust from teh cleint it will need the parameters like the user id
+ * not a @Body
+ */
 fun Route.unfollowUser(followService: FollowService){
 
-    route("/api/following/unfollow"){
-        delete {
+    authenticate {
+        route("/api/following/unfollow"){
+            delete {
+                //PARAM QUERY here is the userId, because is a string
+                val userId = call.parameters[QueryParams.USER_ID] ?: kotlin.run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@delete
+                }
 
-            val request = call.receiveOrNull<FollowUpdateRequest>() ?: kotlin.run {
-                call.respond(HttpStatusCode.BadRequest)
-                return@delete
-            }
-
-            val didUserExist = followService.unFollowUserIfExist(request, call.userId)
-            if (didUserExist){
-                call.respond(
-                    status = HttpStatusCode.OK,
-                    message = BasicApiResponse<Unit>(
-                        successful = true
+                val didUserExist = followService.unFollowUserIfExist(userId, call.userId)
+                if (didUserExist){
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = BasicApiResponse<Unit>(
+                            successful = true
+                        )
                     )
-                )
-            }else {
-                call.respond(
-                    status = HttpStatusCode.OK,
-                    message = BasicApiResponse<Unit>(
-                        successful = false,
-                        message = USER_NOT_FOUND
+                }else {
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = BasicApiResponse<Unit>(
+                            successful = false,
+                            message = USER_NOT_FOUND
+                        )
                     )
-                )
+                }
             }
         }
     }
+
 }
 
 
