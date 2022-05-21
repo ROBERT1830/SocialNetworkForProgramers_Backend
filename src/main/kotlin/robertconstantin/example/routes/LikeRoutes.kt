@@ -86,7 +86,7 @@ fun Route.unlikeParent(
                 }
 
                 //create like if the email belong to user that perfom like
-                val unlikeSuccessful =  likeService.unlikeParent(call.userId, request.parentId)
+                val unlikeSuccessful =  likeService.unlikeParent(call.userId, request.parentId, request.parentType)
                 if (unlikeSuccessful){
                     call.respond(
                         status =  HttpStatusCode.OK,

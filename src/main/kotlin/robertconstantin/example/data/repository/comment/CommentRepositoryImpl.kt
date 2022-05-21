@@ -1,14 +1,18 @@
 package robertconstantin.example.data.repository.comment
 
+import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
 import robertconstantin.example.data.models.Comment
+import robertconstantin.example.data.models.Like
+import robertconstantin.example.data.responses.CommentResponse
 
 class CommentRepositoryImpl(
     db: CoroutineDatabase
 ): CommentRepository {
 
-    val comments = db.getCollection<Comment>()
+    private val comments = db.getCollection<Comment>()
+    private val likes = db.getCollection<Like>()
 
 
     override suspend fun createComment(comment: Comment): String {
@@ -29,9 +33,29 @@ class CommentRepositoryImpl(
         ).wasAcknowledged() // returns true if the write in the db was successfull.
     }
 
-    override suspend fun getCommentsForPost(postId: String): List<Comment> {
+    override suspend fun getCommentsForPost(postId: String, ownUserId: String): List<CommentResponse> {
         //we have in comment document the postId
-        return comments.find(Comment::postId eq postId).toList()
+        return comments.find(Comment::postId eq postId).toList().map{ comment ->
+            /*Find where the parent id is the comment id, and the usre id is the userId of the comment*/
+            val isLiked = likes.findOne(
+                and(
+                    Like::userId eq ownUserId, //user that makes the response if the followingUserId
+                    Like::parentId eq comment.id
+                )
+            ) != null //if we find a document in like collections means that there is a like for that comment
+
+            CommentResponse(
+                id = comment.id,
+                username = comment.username,
+                profileImageUrl = comment.profilePictureUrl,
+                timestamp = comment.timestamp,
+                comment = comment.comment,
+                isLiked = isLiked,
+                likeCount = comment.likeCount,
+
+            )
+        }
+
     }
 
     override suspend fun getComment(commentId: String): Comment? {

@@ -3,6 +3,8 @@ package robertconstantin.example.data.repository.likes
 import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
+import robertconstantin.example.data.models.Comment
 import robertconstantin.example.data.models.Like
 import robertconstantin.example.data.models.Post
 import robertconstantin.example.data.models.User
@@ -15,6 +17,10 @@ class LikesRepositoryImpl(
     //the collection where we perfom actions
     private val likes = db.getCollection<Like>()
     private val users = db.getCollection<User>()
+    //acces the parents because we can have likes of comments and posts
+    private val comments = db.getCollection<Comment>()
+    private val posts = db.getCollection<Post>()
+
 
     /**
      * To like a post just check if the post and the user exists
@@ -26,8 +32,27 @@ class LikesRepositoryImpl(
      */
     override suspend fun likeParent(userId: String, parentId: String, parentType: Int): Boolean { //return true if there is insertion
         val doesUserExist = users.findOneById(userId) != null
+
         //if user exists add and entry to the likes collection
         return if (doesUserExist){
+            //find the parent and increase the like count
+            when(parentType){
+                ParentType.Post.type ->{
+                    val post = posts.findOneById(parentId) ?: return false
+                    posts.updateOneById(
+                        id = parentId,
+                        update = setValue(Post::likeCount, post.likeCount + 1)
+                    )
+
+                }
+                ParentType.Comment.type ->{
+                    val comment = comments.findOneById(parentId) ?: return false
+                    comments.updateOneById(
+                        id = parentId,
+                        update = setValue(Comment::likeCount, comment.likeCount + 1)
+                    )
+                }
+            }
             likes.insertOne(
                 //insert an object which is a post object.
                 Like(userId = userId, parentId = parentId, parentType, System.currentTimeMillis())
@@ -38,10 +63,28 @@ class LikesRepositoryImpl(
         }
     }
 
-    override suspend fun unlikeParent(userId: String, parentId: String): Boolean {
+    override suspend fun unlikeParent(userId: String, parentId: String, parentType: Int): Boolean {
         val doesUserExist = users.findOneById(userId) != null
         //if user exists add and entry to the likes collection
         return if (doesUserExist){
+            //find the parent and increase the like count
+            when(parentType){
+                ParentType.Post.type ->{
+                    val post = posts.findOneById(parentId) ?: return false
+                    posts.updateOneById(
+                        id = parentId,
+                        update = setValue(Post::likeCount, (post.likeCount - 1).coerceAtLeast(0)) //the coerce will asign the value but if it is les thatn 0 will asign allways 0
+                    )
+
+                }
+                ParentType.Comment.type ->{
+                    val comment = comments.findOneById(parentId) ?: return false
+                    comments.updateOneById(
+                        id = parentId,
+                        update = setValue(Comment::likeCount, (comment.likeCount - 1).coerceAtLeast(0))
+                    )
+                }
+            }
             //delete one where the userId and postid is equel to the parameters.
             //you are deleting a document that has as userId and postId those specified by parameters.
             likes.deleteOne(

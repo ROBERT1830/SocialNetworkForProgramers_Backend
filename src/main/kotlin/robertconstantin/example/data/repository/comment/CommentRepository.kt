@@ -1,6 +1,7 @@
 package robertconstantin.example.data.repository.comment
 
 import robertconstantin.example.data.models.Comment
+import robertconstantin.example.data.responses.CommentResponse
 
 sealed interface CommentRepository {
 
@@ -10,7 +11,7 @@ sealed interface CommentRepository {
 
     suspend fun deleteCommentsFromPost(postId: String): Boolean
 
-    suspend fun getCommentsForPost(postId: String): List<Comment>
+    suspend fun getCommentsForPost(postId: String, ownUserId: String): List<CommentResponse>
 
     suspend fun getComment(commentId: String): Comment?
 }

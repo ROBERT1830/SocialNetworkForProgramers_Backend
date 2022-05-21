@@ -313,8 +313,34 @@ fun Route.deletePost(
             }
         }
     }
+}
 
 
+fun Route.getPostDetails(
+    postService: PostService
+){
+    authenticate {
+        get("/api/post/details"){
+            val postId = call.parameters["postId"]?: kotlin.run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            //with the postId we can get the post information from the db
+            val post = postService.getPost(postId) ?: kotlin.run {
+                call.respond(HttpStatusCode.NotFound)
+                return@get
+            }
+            //if the  code reaches here, we know that we have a post
+            call.respond(
+                status = HttpStatusCode.OK,
+                message = BasicApiResponse(
+                    successful = true,
+                    data = post
+                )
+            )
+        }
+    }
 }
 
 

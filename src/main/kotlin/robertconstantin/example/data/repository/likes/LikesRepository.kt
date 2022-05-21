@@ -8,7 +8,7 @@ interface LikesRepository {
 
     suspend fun likeParent(userId: String, parentId:String, parentType: Int): Boolean //returns if that post was found for that user
 
-    suspend fun unlikeParent(userId: String, parentId:String): Boolean
+    suspend fun unlikeParent(userId: String, parentId:String, parentType: Int): Boolean
 
     suspend fun deleteLikesForParent(parentId: String)
 

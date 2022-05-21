@@ -111,8 +111,10 @@ class UserService(
 //                followedUserId = user.id
 //            )
             //go through the list that contains the current user as followingUser and followedUserId
-            //
-            val isFollowing = followsByUser.find { it.followedUserId == user.id } != null //if ginf and is not null
+            //this will give true or false to each UserResponseitem for isFollowing. maybe there are users that a current user do not follow.
+            val isFollowing = followsByUser.find {
+                it.followedUserId == user.id } != null //if ginf and is not null
+
             UserResponseItem(
                 userId = user.id,
                 userName = user.username,

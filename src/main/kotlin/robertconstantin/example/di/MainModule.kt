@@ -83,7 +83,7 @@ val mainModule = module {
 
     single { LikeService(get(), get(), get()) }
 
-    single {CommentService(get())}
+    single {CommentService(get(), get())}
 
     single {
         ActivityService(get(), get(), get()) //one get for each repo. koin will se what data is needed and then will come here to provide it.
