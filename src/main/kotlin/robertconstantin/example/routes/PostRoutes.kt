@@ -207,6 +207,7 @@ fun Route.getPostsForProfile(
             val pageSize =
                 call.parameters[QueryParams.PARAM_PAGE_SIZE]?.toIntOrNull() ?: Constants.DEFAULT_POST_PAGE_SIZE
             val posts = postService.getPostForProfile(
+                ownUserId = call.userId,
                 userId = userId ?: call.userId,
                 page = page,
                 pageSize = pageSize
@@ -327,7 +328,7 @@ fun Route.getPostDetails(
             }
 
             //with the postId we can get the post information from the db
-            val post = postService.getPost(postId) ?: kotlin.run {
+            val post = postService.getPostDetails(call.userId, postId) ?: kotlin.run {
                 call.respond(HttpStatusCode.NotFound)
                 return@get
             }

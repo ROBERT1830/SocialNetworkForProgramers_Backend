@@ -16,6 +16,7 @@ class ActivityService(
 ) {
 
     suspend fun getActivitiesForUser(
+
         userId: String,
         page: Int = 0,
         pageSize: Int = Constants.DEFAULT_ACTIVITY_PAGE_SIZE

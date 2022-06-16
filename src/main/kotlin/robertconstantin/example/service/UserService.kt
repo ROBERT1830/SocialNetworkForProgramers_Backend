@@ -8,6 +8,7 @@ import robertconstantin.example.data.requests.LoginRequest
 import robertconstantin.example.data.requests.UpdateProfileRequest
 import robertconstantin.example.data.responses.ProfileResponse
 import robertconstantin.example.data.responses.UserResponseItem
+import robertconstantin.example.util.Constants
 
 class UserService(
     private val userRepository: UserRepository,
@@ -138,8 +139,8 @@ class UserService(
                 email = request.email,
                 username = request.username,
                 password = request.password,
-                profileImageUrl = "",
-                bannerUrl = "",
+                profileImageUrl = Constants.DEFAULT_PROFILE_PICTURE_PATH,
+                bannerUrl = Constants.DEFAULT_BANNER_IMAGE_PATH,
                 bio = "",
                 githubUrl = null,
                 instagramUrl = null,

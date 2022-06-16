@@ -3,6 +3,7 @@ package robertconstantin.example.service
 import robertconstantin.example.data.models.Post
 import robertconstantin.example.data.repository.post.PostRepository
 import robertconstantin.example.data.requests.CreatePostRequest
+import robertconstantin.example.data.responses.PostResponse
 import robertconstantin.example.util.Constants.DEFAULT_POST_PAGE_SIZE
 
 class PostService(
@@ -22,27 +23,36 @@ class PostService(
     }
 
      suspend fun getPostForFollows(
-         userId: String,
+         ownUserId: String,
          page: Int,
          pageSize: Int = DEFAULT_POST_PAGE_SIZE
-     ): List<Post>{
+     ): List<PostResponse>{
          return postRepository.getPostsByFollows(
-             userId, page, pageSize
+             ownUserId, page, pageSize
          )
      }
 
 
      suspend fun getPostForProfile(
+         ownUserId: String,
          userId: String,
          page: Int,
          pageSize: Int = DEFAULT_POST_PAGE_SIZE
-     ): List<Post>{
+     ): List<PostResponse>{
          return postRepository.getPostForProfile(
-             userId, page, pageSize
+             ownUserId,userId, page, pageSize
          )
      }
 
-     suspend fun getPost(postId: String): Post? = postRepository.getPost(postId)
+     suspend fun getPost(
+         postId: String,
+     ): Post? {
+         return postRepository.getPost(postId)
+     }
+
+     suspend fun getPostDetails(ownUserId:String, postId:String): PostResponse? {
+         return postRepository.getPostDetails(ownUserId, postId)
+     }
 
      suspend fun deletePost(postId: String){
          postRepository.deletePost(postId)

@@ -13,6 +13,7 @@ import robertconstantin.example.service.ActivityService
 import robertconstantin.example.service.LikeService
 import robertconstantin.example.service.UserService
 import robertconstantin.example.util.ApiResponseMessages
+import robertconstantin.example.util.QueryParams
 import robertconstantin.example.util.QueryParams.PARAM_PARENT_ID
 
 fun Route.likeParent(
@@ -80,13 +81,19 @@ fun Route.unlikeParent(
     authenticate {
         route("/api/like"){
             delete {
-                val request = call.receiveOrNull<LikeUpdateRequest>() ?: kotlin.run {
+                //when unlike a parent we need parentId
+                val parentId = call.parameters[QueryParams.PARAM_PARENT_ID]?: kotlin.run {
+                    call.respond(HttpStatusCode.BadRequest)
+                    return@delete
+                }
+                val parentType = call.parameters[QueryParams.PARAM_PARENT_TYPE]?.toIntOrNull() ?: kotlin.run {
                     call.respond(HttpStatusCode.BadRequest)
                     return@delete
                 }
 
+
                 //create like if the email belong to user that perfom like
-                val unlikeSuccessful =  likeService.unlikeParent(call.userId, request.parentId, request.parentType)
+                val unlikeSuccessful =  likeService.unlikeParent(call.userId, parentId, parentType)
                 if (unlikeSuccessful){
                     call.respond(
                         status =  HttpStatusCode.OK,

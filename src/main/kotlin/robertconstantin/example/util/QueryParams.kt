@@ -9,4 +9,5 @@ object QueryParams {
     const val PARAM_QUERY = "query"
     const val USER_ID = "userId"
     const val PARAM_PARENT_ID = "parentId"
+    const val PARAM_PARENT_TYPE = "parentType"
 }
