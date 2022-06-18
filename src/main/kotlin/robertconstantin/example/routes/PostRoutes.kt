@@ -320,7 +320,8 @@ fun Route.deletePost(
 fun Route.getPostDetails(
     postService: PostService
 ){
-    authenticate {
+    //removed the auth because we will need no auth for deeplinking
+    //authenticate {
         get("/api/post/details"){
             val postId = call.parameters["postId"]?: kotlin.run {
                 call.respond(HttpStatusCode.BadRequest)
@@ -341,7 +342,7 @@ fun Route.getPostDetails(
                 )
             )
         }
-    }
+    //}
 }
 
 

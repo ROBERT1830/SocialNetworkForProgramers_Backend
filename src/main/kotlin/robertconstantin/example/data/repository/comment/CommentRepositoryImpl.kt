@@ -3,20 +3,26 @@ package robertconstantin.example.data.repository.comment
 import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineDatabase
 import org.litote.kmongo.eq
+import org.litote.kmongo.setValue
 import robertconstantin.example.data.models.Comment
 import robertconstantin.example.data.models.Like
+import robertconstantin.example.data.models.Post
 import robertconstantin.example.data.responses.CommentResponse
 
 class CommentRepositoryImpl(
     db: CoroutineDatabase
 ): CommentRepository {
 
+    private val posts = db.getCollection<Post>()
     private val comments = db.getCollection<Comment>()
     private val likes = db.getCollection<Like>()
 
 
     override suspend fun createComment(comment: Comment): String {
         comments.insertOne(comment)
+        //increase comment number
+        val oldCommentCount = posts.findOneById(comment.postId)?.commentCount ?: 0
+        posts.updateOneById(comment.postId, setValue(Post::commentCount, oldCommentCount + 1))
         return comment.id
 
     }
